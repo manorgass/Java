@@ -1,9 +1,10 @@
 import java.awt.*; //for GUI
 import javax.swing.JOptionPane; //for Message Box
 import java.awt.event.*; //for Button action
-import java.io.*; //for File Input & Output
+//import java.io.*; //for File Input & Output
 
 public class frame extends Frame implements ActionListener {
+	static frame f;
 	static int i;
 	//Panel
 	static Panel p[] = new Panel[7];
@@ -107,7 +108,7 @@ public class frame extends Frame implements ActionListener {
 		p3_l.setForeground(Color.WHITE);
 		p3_list = new List();
 		p3_list.add("Iron man");
-		p3_list.add("Hurk");
+		p3_list.add("Hulk");
 		p3_list.add("Saw");
 		p3_list.add("Superman");
 		p3_list.add("Darknigth");
@@ -255,6 +256,19 @@ public class frame extends Frame implements ActionListener {
 		//p[6]
 		for(i=0; i<p6_b.length; i++)
 			p6_b[i].addActionListener(this);
+		/*
+		 * Add Mouse Listener
+		 */
+		//panel
+		for(i=0; i<p.length; i++) {
+			p[i].addMouseListener(new MouseAdapter() {
+				public void mousePressed(MouseEvent me) {
+					if(me.getModifiers() == me.BUTTON3_MASK)
+						pm.show(f, me.getXOnScreen(), me.getYOnScreen());
+				}
+			});
+		}
+		
 		this.setMenuBar(mb);
 		this.setVisible(true);
 	}
@@ -262,13 +276,7 @@ public class frame extends Frame implements ActionListener {
 	 * Main Function
 	 */
 	public static void main(String[] args) {
-		final frame f = new frame();
-		f.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent me) {
-				if(me.getModifiers() == me.BUTTON3_MASK)
-					pm.show(f, me.getX(), me.getY());
-			}
-		});
+		f = new frame();
 	}
 	/*
 	 * for ActionEvents
@@ -317,6 +325,11 @@ public class frame extends Frame implements ActionListener {
 			//p2
 			if(p2_cbg.getSelectedCheckbox().getLabel().equals("기타") && p2_tf.getText().equals("")) {
 				JOptionPane.showMessageDialog(getParent(), "기타를 입력해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+				break;
+			}
+			//p3
+			if(p3_list.getSelectedIndex() == -1) {
+				JOptionPane.showMessageDialog(getParent(), "좋아하는 영화를 선택해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
 				break;
 			}
 			//variable
