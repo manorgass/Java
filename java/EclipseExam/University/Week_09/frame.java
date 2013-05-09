@@ -44,6 +44,9 @@ public class frame extends Frame implements ActionListener {
 	static Button p5_b[] = new Button[2];
 	//for p[6]
 	static Button p6_b[] = new Button[10];
+	//for Array logic
+	Students student[] = new Students[100];
+	int stu_count=0; //for students count
 	//생성자
 	public frame() {
 		super("KJW 성적관리 프로그램");
@@ -283,6 +286,8 @@ public class frame extends Frame implements ActionListener {
 	 */
 	public void actionPerformed(ActionEvent e) {
 		String event = e.getActionCommand();
+		String name, num, food, music, movie, professor;
+		int kor, mat, eng;
 		switch(event) {
 		case "About this program...":
 			JOptionPane.showMessageDialog(getParent(), 
@@ -293,54 +298,17 @@ public class frame extends Frame implements ActionListener {
 					"Information", JOptionPane.PLAIN_MESSAGE);
 			break;
 		case "Output":
-			//check empty field
-			boolean isEmpty = false;
-			String atEmpty = "";
-			//p0
-			for(i=0; i<p0_tf.length; i++) {
-				if(p0_tf[i].getText().equals("")) {
-					isEmpty = true;
-					atEmpty = p0_l[i].getText();
-					break;
-				}
-			}
-			if(isEmpty) {
-				JOptionPane.showMessageDialog(getParent(), atEmpty+"을 입력해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			//Check Empty field
+			if(checkEmpty())
 				break;
-			}
-			//p1
-			int p1_count = 0;
-			for(i=0; i<p1_cb.length; i++) {
-				if(!p1_cb[i].getState())
-					p1_count++;
-			}
-			if(p1_count == p1_cb.length) {
-				JOptionPane.showMessageDialog(getParent(), "음식을 선택해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
-				break;
-			}
-			if(p1_cb[3].getState() && p1_tf.getText().equals("")) {
-				JOptionPane.showMessageDialog(getParent(), "기타를 입력해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
-				break;
-			}
-			//p2
-			if(p2_cbg.getSelectedCheckbox().getLabel().equals("기타") && p2_tf.getText().equals("")) {
-				JOptionPane.showMessageDialog(getParent(), "기타를 입력해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
-				break;
-			}
-			//p3
-			if(p3_list.getSelectedIndex() == -1) {
-				JOptionPane.showMessageDialog(getParent(), "좋아하는 영화를 선택해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
-				break;
-			}
 			//variable
 			//p[0]
-			String name	= p0_tf[0].getText();
-			String num	= p0_tf[1].getText();
-			int kor, mat, eng;
+			name	= p0_tf[0].getText();
+			num	= p0_tf[1].getText();
 			try {
-			kor		= Integer.parseInt(p0_tf[2].getText());
-			mat		= Integer.parseInt(p0_tf[3].getText());
-			eng		= Integer.parseInt(p0_tf[4].getText());
+				kor	= Integer.parseInt(p0_tf[2].getText());
+				mat	= Integer.parseInt(p0_tf[3].getText());
+				eng	= Integer.parseInt(p0_tf[4].getText());
 			} catch(NumberFormatException error) {
 				JOptionPane.showMessageDialog(getParent(), "성적에 숫자를 입력해주세요!" ,"Error!!", JOptionPane.PLAIN_MESSAGE);
 				break;
@@ -348,7 +316,7 @@ public class frame extends Frame implements ActionListener {
 			int sum		= kor + mat + eng;
 			double ave	= sum/3;
 			//p[1]
-			p1_count = 0;
+			int p1_count = 0;
 			String p1_cbv[] = new String[4];
 			for(i=0; i<p1_cb.length; i++) {
 				if(p1_cb[i].getState() && i<p1_cbv.length-1) {
@@ -396,9 +364,31 @@ public class frame extends Frame implements ActionListener {
 			p5_ta.append("좋아하는 교수님 : " + p4_choiv);
 			break;
 		case "Exit":
+			this.setVisible(false);
+			this.dispose();
 			System.exit(0);
 			break;
 		case "Array Save":
+			//check empty field
+			if(checkEmpty()) break;
+			name = p0_tf[0].getText();
+			num	= p0_tf[1].getText();
+			try {
+				kor	= Integer.parseInt(p0_tf[2].getText());
+				mat	= Integer.parseInt(p0_tf[3].getText());
+				eng	= Integer.parseInt(p0_tf[4].getText());
+			} catch(NumberFormatException error) {
+				JOptionPane.showMessageDialog(getParent(), "성적에 숫자를 입력해주세요!" ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+				break;
+			}
+			food = getFavoriteFood();
+			music = getFavoriteMusic();
+			movie = getFavoriteMovie();
+			professor = getFavoritProfessor();
+						
+			student[stu_count] = new Students(name, num, kor, mat, eng, food, music, movie, professor );
+			
+			
 			break;
 		case "Array Output":
 			break;
@@ -419,6 +409,76 @@ public class frame extends Frame implements ActionListener {
 		case "DB Delete":
 			break;
 		}		
+	}
+	
+	boolean checkEmpty() {
+		//check empty field
+		boolean isEmpty = false;
+		String atEmpty = "";
+		//p0
+		for(i=0; i<p0_tf.length; i++) {
+			if(p0_tf[i].getText().equals("")) {
+				isEmpty = true;
+				atEmpty = p0_l[i].getText();
+				break;
+			}
+		}
+		if(isEmpty) {
+			JOptionPane.showMessageDialog(getParent(), atEmpty+"을 입력해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			return true;
+		}
+		//p1
+		int p1_count = 0;
+		for(i=0; i<p1_cb.length; i++) {
+			if(!p1_cb[i].getState())
+				p1_count++;
+		}
+		if(p1_count == p1_cb.length) {
+			JOptionPane.showMessageDialog(getParent(), "음식을 선택해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			return true;
+		}
+		if(p1_cb[3].getState() && p1_tf.getText().equals("")) {
+			JOptionPane.showMessageDialog(getParent(), "기타를 입력해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			return true;
+		}
+		//p2
+		if(p2_cbg.getSelectedCheckbox().getLabel().equals("기타") && p2_tf.getText().equals("")) {
+			JOptionPane.showMessageDialog(getParent(), "기타를 입력해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			return true;
+		}
+		//p3
+		if(p3_list.getSelectedIndex() == -1) {
+			JOptionPane.showMessageDialog(getParent(), "좋아하는 영화를 선택해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			return true;
+		}
+		return false;
+	}
+	String getFavoriteFood() {
+		String sumString = null;
+		int count = 0;
+		for(i=0; i<p1_cb.length; i++) {
+			if(p1_cb[i].getState() && i<p1_cb.length-1) {
+				if(count>1)
+					sumString += ", ";
+				sumString += p1_cb[i].getLabel();
+				count++;
+			}
+			else if(p1_cb[i].getState() && i == p1_cb.length-1) {
+				if(count>1)
+					sumString += ", ";
+				sumString += p1_tf.getText();
+				count++;
+			}
+		}
+		return sumString;
+	}
+	private String getFavoritProfessor(){return p4_choi.getSelectedItem();}
+	private String getFavoriteMovie()	{return p3_list.getSelectedItem();}
+	private String getFavoriteMusic()	{
+		if(p2_cbg.getSelectedCheckbox().getLabel() != "기타") 
+			return p2_cbg.getSelectedCheckbox().getLabel();
+		else
+			return p2_tf.getText();
 	}
 }
 /*
