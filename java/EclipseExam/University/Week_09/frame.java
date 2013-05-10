@@ -2,56 +2,58 @@ import java.awt.*; //for GUI
 import javax.swing.JOptionPane; //for Message Box
 import java.awt.event.*; //for Button action
 import java.io.*;
+import java.sql.*;
 
 public class frame extends Frame implements ActionListener {
-	static frame f;
-	static int i;
+	public static frame f;
+	public static int i;
 	//Panel
-	static Panel p[] = new Panel[7];
+	public static Panel p[] = new Panel[7];
 	//Menu
 	//new MenuShortcut 으로 단축키 생성 가능
-	static MenuBar mb = new MenuBar();
-	static Menu menu[] = new Menu[4];
-	static MenuItem menu0_item[] = new MenuItem[4];
-	static MenuItem menu1_item[] = new MenuItem[2];
-	static MenuItem menu2_item[] = new MenuItem[4];
-	static MenuItem menu3_item[] = new MenuItem[4];
+	public static MenuBar mb = new MenuBar();
+	public static Menu menu[] = new Menu[4];
+	public static MenuItem menu0_item[] = new MenuItem[4];
+	public static MenuItem menu1_item[] = new MenuItem[2];
+	public static MenuItem menu2_item[] = new MenuItem[4];
+	public static MenuItem menu3_item[] = new MenuItem[4];
 	//PopupMenu
-	static PopupMenu pm = new PopupMenu();
-	static MenuItem pmItem[] = new MenuItem[3];
+	public static PopupMenu pm = new PopupMenu();
+	public static MenuItem pmItem[] = new MenuItem[3];
 	//for p[0]
-	static Label p0_l[] = new Label[5];
-	static TextField p0_tf[] = new TextField[5];
+	public static Label p0_l[] = new Label[5];
+	public static TextField p0_tf[] = new TextField[5];
 	//for p[1]
-	static Label p1_l;
-	static Checkbox p1_cb[] = new Checkbox[4];
-	static TextField p1_tf;
+	public static Label p1_l;
+	public static Checkbox p1_cb[] = new Checkbox[4];
+	public static TextField p1_tf;
 	//for p[2]
-	static Label p2_l;
-	static Checkbox p2_cb[] = new Checkbox[4];
-	static CheckboxGroup p2_cbg;
-	static TextField p2_tf;
+	public static Label p2_l;
+	public static Checkbox p2_cb[] = new Checkbox[4];
+	public static CheckboxGroup p2_cbg;
+	public static TextField p2_tf;
 	//for p[3]
-	static Label p3_l;
-	static List p3_list;
+	public static Label p3_l;
+	public static List p3_list;
 	//for p[4]
-	static Label p4_l;
-	static Choice p4_choi;
+	public static Label p4_l;
+	public static Choice p4_choi;
 	//for p[5]
-	static Font font;
-	static Label p5_l;
-	static TextArea p5_ta;
-	static Button p5_b[] = new Button[2];
+	public static Font font;
+	public static Label p5_l;
+	public static TextArea p5_ta;
+	public static Button p5_b[] = new Button[3];
 	//for p[6]
-	static Button p6_b[] = new Button[10];
+	public static Button p6_b[] = new Button[10];
 	//for Array logic
-	Students student[] = new Students[100];
-	int stuIndex=0; //for students count
+	public Students student[] = new Students[100];
+	public int stuIndex=0; //for students count
 	//생성자
 	public frame() {
 		super("KJW 성적관리 프로그램");
 		this.setLayout(null);
 		this.setSize(505, 655);
+		this.setLocation(40,40);
 		this.addWindowListener(new EventHandler()); //for Exit
 		this.setResizable(false); //for fixing size
 		
@@ -77,33 +79,36 @@ public class frame extends Frame implements ActionListener {
 		switch(event) {
 		
 		case "About this program...":
-			JOptionPane.showMessageDialog(getParent(), 
+			popupMsg(
+					"information", 
 					"Producer : 배재대학교 정보통신공학과 09학번 김중원\n" +
 					"Purpose : Java programming 13년 2학년 1학기 10주차 과제\n" +
 					"Email : manorgass@gmail.com\n" +
-					"Facebook : facebook.com/manorgass" ,
-					"Information", JOptionPane.PLAIN_MESSAGE);
+					"Facebook : facebook.com/manorgass"
+					);
 			break;
-			
+		//p5 buttons
 		case "Output":
-			//Check Empty field
-			if(checkEmpty())
+			if(stuIndex == 0) //check array value
+				popupMsg("Error!!", "Please enter the information to text field at left panel.");
+			if(checkEmpty())//Check Empty field
 				break;
-			if(stuIndex == 0) {
-				JOptionPane.showMessageDialog(getParent(), "저장된 데이터가 없습니다." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
-			} else {
+			
+			else {
 				p5_ta.setText("");
 				print_to_textarea(student[stuIndex-1]);
 			}
 			
 			break;
-			
+		case "Clear":
+			p5_ta.setText("");
+			break;
 		case "Exit":
 			this.setVisible(false);
 			this.dispose();
 			System.exit(0);
 			break;
-			
+		//p6 buttons	
 		case "Array Save":
 			//check empty field
 			if(checkEmpty()) break;
@@ -117,6 +122,11 @@ public class frame extends Frame implements ActionListener {
 			break;
 			
 		case "Array Output":
+			if(stuIndex == 0) { //check array value
+				popupMsg("Error!!", "Please save the information of students.");
+				break;
+			}
+				
 			p5_ta.setText("");
 			for(i=0; i<stuIndex; i++)
 				print_to_textarea(student[i]);
@@ -191,7 +201,7 @@ public class frame extends Frame implements ActionListener {
 			}
 		}
 		if(isEmpty) {
-			JOptionPane.showMessageDialog(getParent(), atEmpty+"을 입력해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			popupMsg("Error!!", atEmpty+"을 입력해주세요.");
 			return true;
 		}
 		//p1
@@ -201,21 +211,21 @@ public class frame extends Frame implements ActionListener {
 				p1_count++;
 		}
 		if(p1_count == p1_cb.length) {
-			JOptionPane.showMessageDialog(getParent(), "음식을 선택해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			popupMsg("Error!!", "음식을 선택해주세요.");
 			return true;
 		}
 		if(p1_cb[3].getState() && p1_tf.getText().equals("")) {
-			JOptionPane.showMessageDialog(getParent(), "기타를 입력해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			popupMsg("Error!!", "기타를 입력해주세요.");
 			return true;
 		}
 		//p2
 		if(p2_cbg.getSelectedCheckbox().getLabel().equals("기타") && p2_tf.getText().equals("")) {
-			JOptionPane.showMessageDialog(getParent(), "기타를 입력해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			popupMsg("Error!!", "기타를 입력해주세요.");
 			return true;
 		}
 		//p3
 		if(p3_list.getSelectedIndex() == -1) {
-			JOptionPane.showMessageDialog(getParent(), "좋아하는 영화를 선택해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			popupMsg("Error!!", "좋아하는 영화를 선택해주세요.");
 			return true;
 		}
 		return false;
@@ -226,7 +236,7 @@ public class frame extends Frame implements ActionListener {
 		try {
 			return Integer.parseInt(p0_tf[2].getText());
 		} catch(NumberFormatException error) {
-			JOptionPane.showMessageDialog(getParent(), "성적에 숫자를 입력해주세요!" ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			popupMsg("Error!!", "성적에 숫자를 입력해주세요!");
 			return -1;
 		}
 	}
@@ -234,7 +244,7 @@ public class frame extends Frame implements ActionListener {
 		try {
 			return Integer.parseInt(p0_tf[3].getText());
 		} catch(NumberFormatException error) {
-			JOptionPane.showMessageDialog(getParent(), "성적에 숫자를 입력해주세요!" ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			popupMsg("Error!!", "성적에 숫자를 입력해주세요!");
 			return -1;
 		}
 	}
@@ -242,7 +252,7 @@ public class frame extends Frame implements ActionListener {
 		try {
 			return Integer.parseInt(p0_tf[4].getText());
 		} catch(NumberFormatException error) {
-			JOptionPane.showMessageDialog(getParent(), "성적에 숫자를 입력해주세요!" ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			popupMsg("Error!!", "성적에 숫자를 입력해주세요!");
 			return -1;
 		}
 	}
@@ -378,7 +388,8 @@ public class frame extends Frame implements ActionListener {
 		p5_ta = new TextArea();
 		p5_ta.setEditable(false); //출력전용
 		p5_b[0] = new Button("Output");
-		p5_b[1] = new Button("Exit");
+		p5_b[1] = new Button("Clear");
+		p5_b[2] = new Button("Exit");
 		//Panel 6
 		p6_b[0] = new Button("Array Save");
 		p6_b[1] = new Button("Array Output");
@@ -447,8 +458,9 @@ public class frame extends Frame implements ActionListener {
 		//Panel 5
 		p5_l.setBounds(0, 15, 330, 25);
 		p5_ta.setBounds(20, 50, 285, 400);
-		p5_b[0].setBounds(105, 470, 55, 20);
-		p5_b[1].setBounds(170, 470, 40, 20);
+		p5_b[0].setBounds(30, 470, 55, 25);
+		p5_b[1].setBounds(100, 470, 55, 25);
+		p5_b[2].setBounds(245, 470, 55, 25);
 		//Panel 6
 		
 		
@@ -526,6 +538,10 @@ public class frame extends Frame implements ActionListener {
 				}
 			});
 		}
+	}
+	void popupMsg(String title, String msg) {
+		JOptionPane.showMessageDialog(f, msg ,title, JOptionPane.WARNING_MESSAGE);
+		//JOptionPane.showConfirmDialog(f, "ok?", "title", JOptionPane.OK_CANCEL_OPTION);
 	}
 }
 /*
