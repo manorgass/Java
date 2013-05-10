@@ -1,7 +1,7 @@
 import java.awt.*; //for GUI
 import javax.swing.JOptionPane; //for Message Box
 import java.awt.event.*; //for Button action
-//import java.io.*; //for File Input & Output
+import java.io.*;
 
 public class frame extends Frame implements ActionListener {
 	static frame f;
@@ -12,10 +12,10 @@ public class frame extends Frame implements ActionListener {
 	//new MenuShortcut 으로 단축키 생성 가능
 	static MenuBar mb = new MenuBar();
 	static Menu menu[] = new Menu[4];
-	static MenuItem menu0_i[] = new MenuItem[4];
-	static MenuItem menu1_i[] = new MenuItem[4];
-	static MenuItem menu2_i[] = new MenuItem[4];
-	static MenuItem menu3_i[] = new MenuItem[4];
+	static MenuItem menu0_item[] = new MenuItem[4];
+	static MenuItem menu1_item[] = new MenuItem[2];
+	static MenuItem menu2_item[] = new MenuItem[4];
+	static MenuItem menu3_item[] = new MenuItem[4];
 	//PopupMenu
 	static PopupMenu pm = new PopupMenu();
 	static MenuItem pmItem[] = new MenuItem[3];
@@ -46,7 +46,7 @@ public class frame extends Frame implements ActionListener {
 	static Button p6_b[] = new Button[10];
 	//for Array logic
 	Students student[] = new Students[100];
-	int stu_count=0; //for students count
+	int stuIndex=0; //for students count
 	//생성자
 	public frame() {
 		super("KJW 성적관리 프로그램");
@@ -54,6 +54,248 @@ public class frame extends Frame implements ActionListener {
 		this.setSize(505, 655);
 		this.addWindowListener(new EventHandler()); //for Exit
 		this.setResizable(false); //for fixing size
+		
+		makeComponents();
+		settingComponents();
+		addComponents();
+		
+		this.setMenuBar(mb);
+		this.setVisible(true);
+	}
+	/*
+	 * Main Function
+	 */
+	public static void main(String[] args) {
+		f = new frame();
+	}
+	/*
+	 * for ActionEvents
+	 */
+	public void actionPerformed(ActionEvent e) {
+		String event = e.getActionCommand();
+		
+		switch(event) {
+		
+		case "About this program...":
+			JOptionPane.showMessageDialog(getParent(), 
+					"Producer : 배재대학교 정보통신공학과 09학번 김중원\n" +
+					"Purpose : Java programming 13년 2학년 1학기 10주차 과제\n" +
+					"Email : manorgass@gmail.com\n" +
+					"Facebook : facebook.com/manorgass" ,
+					"Information", JOptionPane.PLAIN_MESSAGE);
+			break;
+			
+		case "Output":
+			//Check Empty field
+			if(checkEmpty())
+				break;
+			if(stuIndex == 0) {
+				JOptionPane.showMessageDialog(getParent(), "저장된 데이터가 없습니다." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			} else {
+				p5_ta.setText("");
+				print_to_textarea(student[stuIndex-1]);
+			}
+			
+			break;
+			
+		case "Exit":
+			this.setVisible(false);
+			this.dispose();
+			System.exit(0);
+			break;
+			
+		case "Array Save":
+			//check empty field
+			if(checkEmpty()) break;
+			
+			student[stuIndex] = new Students(get_Name(), get_Num(), getKor(),
+					getMat(), getEng(), getFavoriteFood(), getFavoriteMusic(),
+					getFavoriteMovie(), getFavoritProfessor(), stuIndex);
+			p5_ta.setText("");
+			print_to_textarea(student[stuIndex]);
+			stuIndex++;
+			break;
+			
+		case "Array Output":
+			p5_ta.setText("");
+			for(i=0; i<stuIndex; i++)
+				print_to_textarea(student[i]);
+			break;
+			
+		case "File Save":
+			try {
+				FileWriter fw = new FileWriter("d:/dAtA.txt");
+				BufferedWriter bw = new BufferedWriter(fw);
+				
+				bw.write(p5_ta.getText());
+				bw.close();
+			} catch (IOException IOe) {
+				IOe.printStackTrace();
+			}
+			break;
+		case "File Load":
+			String buffer = "";
+			try
+			{
+				FileReader fr = new FileReader("d:/dAtA.txt");
+				BufferedReader br = new BufferedReader(fr);
+				
+				String line = null;
+				while ((line = br.readLine()) != null) {
+					buffer += line + "\r\n";
+				}
+				br.close();
+			} 
+			catch (IOException IOe) { IOe.printStackTrace(); }
+			p5_ta.setText(buffer);
+			break;
+		case "RAF save":
+			break;
+		case "RAF load":
+			break;
+		case "DB SAVE":
+			break;
+		case "DB LOAD":
+			break;
+		case "DB Search":
+			break;
+		case "DB Delete":
+			break;
+		case "Open":
+			break;
+		case "Save":
+			break;
+		case "Edit":
+			break;
+		case "Sum of score":
+			for(i=0; i<stuIndex; i++)
+				student[i].calculateSum();
+			break;
+		case "Ave of score":
+			for(i=0; i<stuIndex; i++)
+				student[i].calculateAve();
+			break;
+		}		
+	}
+	
+	private boolean checkEmpty() {
+		//check empty field
+		boolean isEmpty = false;
+		String atEmpty = "";
+		//p0
+		for(i=0; i<p0_tf.length; i++) {
+			if(p0_tf[i].getText().equals("")) {
+				isEmpty = true;
+				atEmpty = p0_l[i].getText();
+				break;
+			}
+		}
+		if(isEmpty) {
+			JOptionPane.showMessageDialog(getParent(), atEmpty+"을 입력해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			return true;
+		}
+		//p1
+		int p1_count = 0;
+		for(i=0; i<p1_cb.length; i++) {
+			if(!p1_cb[i].getState())
+				p1_count++;
+		}
+		if(p1_count == p1_cb.length) {
+			JOptionPane.showMessageDialog(getParent(), "음식을 선택해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			return true;
+		}
+		if(p1_cb[3].getState() && p1_tf.getText().equals("")) {
+			JOptionPane.showMessageDialog(getParent(), "기타를 입력해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			return true;
+		}
+		//p2
+		if(p2_cbg.getSelectedCheckbox().getLabel().equals("기타") && p2_tf.getText().equals("")) {
+			JOptionPane.showMessageDialog(getParent(), "기타를 입력해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			return true;
+		}
+		//p3
+		if(p3_list.getSelectedIndex() == -1) {
+			JOptionPane.showMessageDialog(getParent(), "좋아하는 영화를 선택해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			return true;
+		}
+		return false;
+	}
+	private String get_Name() 			{return p0_tf[0].getText();	}
+	private String get_Num()			{return p0_tf[1].getText();	}
+	private int getKor() {
+		try {
+			return Integer.parseInt(p0_tf[2].getText());
+		} catch(NumberFormatException error) {
+			JOptionPane.showMessageDialog(getParent(), "성적에 숫자를 입력해주세요!" ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			return -1;
+		}
+	}
+	private int getMat() {
+		try {
+			return Integer.parseInt(p0_tf[3].getText());
+		} catch(NumberFormatException error) {
+			JOptionPane.showMessageDialog(getParent(), "성적에 숫자를 입력해주세요!" ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			return -1;
+		}
+	}
+	private int getEng() {
+		try {
+			return Integer.parseInt(p0_tf[4].getText());
+		} catch(NumberFormatException error) {
+			JOptionPane.showMessageDialog(getParent(), "성적에 숫자를 입력해주세요!" ,"Error!!", JOptionPane.PLAIN_MESSAGE);
+			return -1;
+		}
+	}
+	private String getFavoriteFood() {
+		String sumString = "";
+		int count = 0;
+		for(i=0; i<p1_cb.length; i++) {
+			if(p1_cb[i].getState() && i<p1_cb.length-1) {
+				if(count>1)
+					sumString += ", ";
+				sumString += p1_cb[i].getLabel();
+				count++;
+			}
+			else if(p1_cb[i].getState() && i == p1_cb.length-1) {
+				if(count>1)
+					sumString += ", ";
+				sumString += p1_tf.getText();
+				count++;
+			}
+		}
+		return sumString;
+	}
+	private String getFavoriteMusic()	{
+		if(p2_cbg.getSelectedCheckbox().getLabel() != "기타") 
+			return p2_cbg.getSelectedCheckbox().getLabel();
+		else
+			return p2_tf.getText();
+	}
+	private String getFavoriteMovie()	{	return p3_list.getSelectedItem();	}
+	private String getFavoritProfessor(){	return p4_choi.getSelectedItem();	}
+	private void print_to_textarea(Students pst) {
+		p5_ta.append("******* student " + pst.count +" *******\n\n");
+		//p0
+		p5_ta.append("이름 : " + pst.name + "\n\n" + 
+					 "학번 : " + pst.num  + "\n\n" + 
+					 "국어 : " + pst.kor  + "점\n\n" +
+					 "영어 : " + pst.eng  + "점\n\n" +
+					 "수학 : " + pst.mat  + "점\n\n");
+		if(pst.sum != -1) { 
+			p5_ta.append("합계 : " + pst.sum  + "점\n\n");
+			if(pst.ave != -1)
+				p5_ta.append("평균 : " + pst.ave  + "점\n\n");
+		}
+		p5_ta.append("좋아하는 음식 : " + pst.favorite_food + "\n\n");
+		//p2
+		p5_ta.append("좋아하는 음악 : " + pst.favorite_music + "\n\n");
+		//p3
+		p5_ta.append("좋아하는 영화 : " + pst.favorite_movie + "\n\n");
+		//p4
+		p5_ta.append("좋아하는 교수님 : " + pst.favorite_professor + "\n\n\n");
+	}
+	
+	private void makeComponents() {
 		/*
 		 * Create Components
 		 */
@@ -61,17 +303,21 @@ public class frame extends Frame implements ActionListener {
 		for(i=0; i<p.length; i++) p[i] = new Panel();
 		//Menu
 		menu[0] = new Menu("File");
-		menu0_i[0] = new MenuItem("Open");
-		menu0_i[1] = new MenuItem("Save");
-		menu0_i[2] = new MenuItem("Edit");
-		menu0_i[3] = new MenuItem("Exit");
-		for(i=0; i<menu0_i.length; i++)
-			menu[0].add(menu0_i[i]);
+		menu0_item[0] = new MenuItem("Open");
+		menu0_item[1] = new MenuItem("Save");
+		menu0_item[2] = new MenuItem("Edit");
+		menu0_item[3] = new MenuItem("Exit");
+		for(i=0; i<menu0_item.length; i++)
+			menu[0].add(menu0_item[i]);
 		menu[1] = new Menu("Calculator");
+		menu1_item[0] = new MenuItem("Sum of score");
+		menu1_item[1] = new MenuItem("Ave of score");
+		for(i=0; i<menu1_item.length; i++)
+			menu[1].add(menu1_item[i]);
 		menu[2] = new Menu("DataBase");
 		menu[3] = new Menu("Help");
-		menu3_i[0] = new MenuItem("About this program...");
-		menu[3].add(menu3_i[0]);
+		menu3_item[0] = new MenuItem("About this program...");
+		menu[3].add(menu3_item[0]);
 		for(i=0; i<menu.length; i++)
 			mb.add(menu[i]);
 		//Popup menu
@@ -144,6 +390,36 @@ public class frame extends Frame implements ActionListener {
 		p6_b[7] = new Button("DB LOAD");
 		p6_b[8] = new Button("DB Search");
 		p6_b[9] = new Button("DB Delete");
+	}
+	
+	private void settingComponents() {
+		/*
+		 * Setting for Panel
+		 */
+		//p[0]
+		p[0].setBounds(0, 65, 170-10, 120);
+		p[0].setLayout(new GridLayout(5,2,0,5));
+		//p[1]
+		p[1].setBounds(0, 195, 170, 100);
+		p[1].setLayout(null);
+		p[1].setBackground(Color.LIGHT_GRAY);
+		//p[2]
+		p[2].setBounds(0, 295, 170, 100);
+		p[2].setLayout(null);
+		//p[3]
+		p[3].setBounds(0, 395, 170, 100);
+		p[3].setLayout(null);
+		p[3].setBackground(Color.LIGHT_GRAY);
+		//p[4]
+		p[4].setBounds(0, 495, 170, 80);
+		p[4].setLayout(null);
+		//p[5]
+		p[5].setBounds(170, 65, 330, 510);
+		p[5].setLayout(null);
+		p[5].setBackground(Color.LIGHT_GRAY);
+		//p[6]
+		p[6].setBounds(0, 575, 500, 75);
+		p[6].setLayout(new GridLayout(2,5,0,0));
 		/*
 		 * Size Setting for Components
 		 */
@@ -174,33 +450,10 @@ public class frame extends Frame implements ActionListener {
 		p5_b[0].setBounds(105, 470, 55, 20);
 		p5_b[1].setBounds(170, 470, 40, 20);
 		//Panel 6
-		/*
-		 * Setting for Panel
-		 */
-		//p[0]
-		p[0].setBounds(0, 65, 170-10, 120);
-		p[0].setLayout(new GridLayout(5,2,0,5));
-		//p[1]
-		p[1].setBounds(0, 195, 170, 100);
-		p[1].setLayout(null);
-		p[1].setBackground(Color.LIGHT_GRAY);
-		//p[2]
-		p[2].setBounds(0, 295, 170, 100);
-		p[2].setLayout(null);
-		//p[3]
-		p[3].setBounds(0, 395, 170, 100);
-		p[3].setLayout(null);
-		p[3].setBackground(Color.LIGHT_GRAY);
-		//p[4]
-		p[4].setBounds(0, 495, 170, 80);
-		p[4].setLayout(null);
-		//p[5]
-		p[5].setBounds(170, 65, 330, 510);
-		p[5].setLayout(null);
-		p[5].setBackground(Color.LIGHT_GRAY);
-		//p[6]
-		p[6].setBounds(0, 575, 500, 75);
-		p[6].setLayout(new GridLayout(2,5,0,0));
+		
+		
+	}
+	void addComponents() {
 		/*
 		 * Add components to panels
 		 */
@@ -245,9 +498,11 @@ public class frame extends Frame implements ActionListener {
 		 * Add Action Listener
 		 */
 		//Menu
-		for(i=0; i<menu0_i.length; i++)
-			menu0_i[i].addActionListener(this);
-		menu3_i[0].addActionListener(this);
+		for(i=0; i<menu0_item.length; i++)
+			menu0_item[i].addActionListener(this);
+		for(i=0; i<menu1_item.length; i++)
+			menu1_item[i].addActionListener(this);
+		menu3_item[0].addActionListener(this);
 		//p[0]
 		//p[1]
 		//p[2]
@@ -271,214 +526,6 @@ public class frame extends Frame implements ActionListener {
 				}
 			});
 		}
-		
-		this.setMenuBar(mb);
-		this.setVisible(true);
-	}
-	/*
-	 * Main Function
-	 */
-	public static void main(String[] args) {
-		f = new frame();
-	}
-	/*
-	 * for ActionEvents
-	 */
-	public void actionPerformed(ActionEvent e) {
-		String event = e.getActionCommand();
-		String name, num, food, music, movie, professor;
-		int kor, mat, eng;
-		switch(event) {
-		case "About this program...":
-			JOptionPane.showMessageDialog(getParent(), 
-					"Producer : 배재대학교 정보통신공학과 09학번 김중원\n" +
-					"Purpose : Java programming 13년 2학년 1학기 10주차 과제\n" +
-					"Email : manorgass@gmail.com\n" +
-					"Facebook : facebook.com/manorgass" ,
-					"Information", JOptionPane.PLAIN_MESSAGE);
-			break;
-		case "Output":
-			//Check Empty field
-			if(checkEmpty())
-				break;
-			//variable
-			//p[0]
-			name	= p0_tf[0].getText();
-			num	= p0_tf[1].getText();
-			try {
-				kor	= Integer.parseInt(p0_tf[2].getText());
-				mat	= Integer.parseInt(p0_tf[3].getText());
-				eng	= Integer.parseInt(p0_tf[4].getText());
-			} catch(NumberFormatException error) {
-				JOptionPane.showMessageDialog(getParent(), "성적에 숫자를 입력해주세요!" ,"Error!!", JOptionPane.PLAIN_MESSAGE);
-				break;
-			}
-			int sum		= kor + mat + eng;
-			double ave	= sum/3;
-			//p[1]
-			int p1_count = 0;
-			String p1_cbv[] = new String[4];
-			for(i=0; i<p1_cb.length; i++) {
-				if(p1_cb[i].getState() && i<p1_cbv.length-1) {
-					p1_cbv[p1_count]= p1_cb[i].getLabel();
-					p1_count++;
-				}
-				else if(p1_cb[i].getState() && i == p1_cbv.length-1) {
-					p1_cbv[p1_count] = p1_tf.getText();
-					p1_count++;
-				}
-			}
-			//p[2]
-			String p2_cbv;
-			if(p2_cbg.getSelectedCheckbox().getLabel() != "기타") 
-				p2_cbv = p2_cbg.getSelectedCheckbox().getLabel();
-			else
-				p2_cbv = p2_tf.getText();
-			//p[3]
-			String p3_listv = p3_list.getSelectedItem();
-			//p[4]
-			String p4_choiv = p4_choi.getSelectedItem();
-			//Output to p[5]_ta (Text Area)
-			p5_ta.setText("******* Output of Data *******\n\n");
-			//p0
-			p5_ta.append("이름 : " + name + "\n\n" + 
-						 "학번 : " + num  + "\n\n" + 
-						 "국어 : " + kor  + "점\n\n" +
-						 "영어 : " + eng  + "점\n\n" +
-						 "수학 : " + mat  + "점\n\n" +
-						 "합계 : " + sum  + "점\n\n" +
-						 "평균 : " + ave  + "점\n\n" +
-						 "좋아하는 음식 : ");
-			//p1
-			for(i=0; i<p1_count; i++) {
-				if(i != p1_count-1)
-					p5_ta.append(p1_cbv[i]+", ");
-				else
-					p5_ta.append(p1_cbv[i]+"\n\n");
-			}
-			//p2
-			p5_ta.append("좋아하는 음악 : " + p2_cbv + "\n\n");
-			//p3
-			p5_ta.append("좋아하는 영화 : " + p3_listv + "\n\n");
-			//p4
-			p5_ta.append("좋아하는 교수님 : " + p4_choiv);
-			break;
-		case "Exit":
-			this.setVisible(false);
-			this.dispose();
-			System.exit(0);
-			break;
-		case "Array Save":
-			//check empty field
-			if(checkEmpty()) break;
-			name = p0_tf[0].getText();
-			num	= p0_tf[1].getText();
-			try {
-				kor	= Integer.parseInt(p0_tf[2].getText());
-				mat	= Integer.parseInt(p0_tf[3].getText());
-				eng	= Integer.parseInt(p0_tf[4].getText());
-			} catch(NumberFormatException error) {
-				JOptionPane.showMessageDialog(getParent(), "성적에 숫자를 입력해주세요!" ,"Error!!", JOptionPane.PLAIN_MESSAGE);
-				break;
-			}
-			food = getFavoriteFood();
-			music = getFavoriteMusic();
-			movie = getFavoriteMovie();
-			professor = getFavoritProfessor();
-						
-			student[stu_count] = new Students(name, num, kor, mat, eng, food, music, movie, professor );
-			
-			
-			break;
-		case "Array Output":
-			break;
-		case "File save":
-			break;
-		case "File Load":
-			break;
-		case "RAF save":
-			break;
-		case "RAF load":
-			break;
-		case "DB SAVE":
-			break;
-		case "DB LOAD":
-			break;
-		case "DB Search":
-			break;
-		case "DB Delete":
-			break;
-		}		
-	}
-	
-	boolean checkEmpty() {
-		//check empty field
-		boolean isEmpty = false;
-		String atEmpty = "";
-		//p0
-		for(i=0; i<p0_tf.length; i++) {
-			if(p0_tf[i].getText().equals("")) {
-				isEmpty = true;
-				atEmpty = p0_l[i].getText();
-				break;
-			}
-		}
-		if(isEmpty) {
-			JOptionPane.showMessageDialog(getParent(), atEmpty+"을 입력해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
-			return true;
-		}
-		//p1
-		int p1_count = 0;
-		for(i=0; i<p1_cb.length; i++) {
-			if(!p1_cb[i].getState())
-				p1_count++;
-		}
-		if(p1_count == p1_cb.length) {
-			JOptionPane.showMessageDialog(getParent(), "음식을 선택해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
-			return true;
-		}
-		if(p1_cb[3].getState() && p1_tf.getText().equals("")) {
-			JOptionPane.showMessageDialog(getParent(), "기타를 입력해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
-			return true;
-		}
-		//p2
-		if(p2_cbg.getSelectedCheckbox().getLabel().equals("기타") && p2_tf.getText().equals("")) {
-			JOptionPane.showMessageDialog(getParent(), "기타를 입력해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
-			return true;
-		}
-		//p3
-		if(p3_list.getSelectedIndex() == -1) {
-			JOptionPane.showMessageDialog(getParent(), "좋아하는 영화를 선택해주세요." ,"Error!!", JOptionPane.PLAIN_MESSAGE);
-			return true;
-		}
-		return false;
-	}
-	String getFavoriteFood() {
-		String sumString = null;
-		int count = 0;
-		for(i=0; i<p1_cb.length; i++) {
-			if(p1_cb[i].getState() && i<p1_cb.length-1) {
-				if(count>1)
-					sumString += ", ";
-				sumString += p1_cb[i].getLabel();
-				count++;
-			}
-			else if(p1_cb[i].getState() && i == p1_cb.length-1) {
-				if(count>1)
-					sumString += ", ";
-				sumString += p1_tf.getText();
-				count++;
-			}
-		}
-		return sumString;
-	}
-	private String getFavoritProfessor(){return p4_choi.getSelectedItem();}
-	private String getFavoriteMovie()	{return p3_list.getSelectedItem();}
-	private String getFavoriteMusic()	{
-		if(p2_cbg.getSelectedCheckbox().getLabel() != "기타") 
-			return p2_cbg.getSelectedCheckbox().getLabel();
-		else
-			return p2_tf.getText();
 	}
 }
 /*
