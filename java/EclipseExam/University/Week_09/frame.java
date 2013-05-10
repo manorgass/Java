@@ -164,27 +164,67 @@ public class frame extends Frame implements ActionListener {
 		case "RAF load":
 			break;
 		case "DB SAVE":
+			if(stuIndex == 0)
+				popupMsg("Alert", "No data to be stored.");
+			else if(stuIndex > 0) {
+				for(i=0; i<stuIndex; i++)
+					student[i].calculateAve();
+				//DB에 information 저장
+				popupMsg("알림", "Save complete..");
+			}
 			break;
 		case "DB LOAD":
+			//DB의 값을 순차적으로 읽어와 ta에 출력
+			popupMsg("Alert", "Load complete.");
 			break;
 		case "DB Search":
+			//A.	새로운 프레임 생성
+			//B.	이름 or 학번을 입력받음.
+			//C.	입력받은 자료 근거로 탐색 후 ta에 출력.
 			break;
 		case "DB Delete":
+			/*
+			 *A. 3개의 버튼을 가진 dialog를 이용, 선택 삭제, 전체 삭제, 취소 중 선택
+			 *	i.	선택삭제
+			 *			1.	이름 or 학번 입력받음
+			 *			2.	삭제버튼을 누르면 DB에서 삭제
+			 *			3.	“삭제 완료”  알림창 출력
+			 *	
+			 *	ii. 전체 삭제
+			 *			1.	테이블 내용 전체 삭제
+			 *			2.	“삭제완료” 알림창 출력
+			 */
 			break;
 		case "Open":
+			/*
+			 * 파일 탐색기를 열어 텍스트파일을 선택, ta에 출력
+			 */
 			break;
 		case "Save":
+			/*
+			 * 원하는 위치에 원하는 이름으로 txt파일을 저장
+			 */
 			break;
 		case "Edit":
 			break;
 		case "Sum of score":
-			for(i=0; i<stuIndex; i++)
-				student[i].calculateSum();
-			break;
+			if(stuIndex == 0) {
+				popupMsg("Alert", "No data to be calculate.");
+				break;
+			} else {
+				for(i=0; i<stuIndex; i++)
+					student[i].calculateSum();
+				break;
+			}
 		case "Ave of score":
-			for(i=0; i<stuIndex; i++)
-				student[i].calculateAve();
-			break;
+			if(stuIndex == 0) {
+				popupMsg("Alert", "No data to be calculate.");
+				break;
+			} else {
+				for(i=0; i<stuIndex; i++)
+					student[i].calculateAve();
+				break;
+			}
 		}		
 	}
 	
