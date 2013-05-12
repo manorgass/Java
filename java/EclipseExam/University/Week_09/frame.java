@@ -51,8 +51,8 @@ public class frame extends Frame implements ActionListener {
 	//for p[6]
 	public static Button p6_b[] = new Button[10];
 	//for Array logic
-	public Students student[] = new Students[100];
-	public int stuIndex=0; //for students count
+	public static Students student[] = new Students[100];
+	public static int stuIndex=0; //for students count
 	//for DB connection
 	static String id="root";
 	static String password="root";
@@ -90,7 +90,7 @@ public class frame extends Frame implements ActionListener {
 		switch(event) {
 		
 		case "About this program...":
-			popupMsg(
+			popupMsg(1, 
 					"information", 
 					"Producer : 배재대학교 정보통신공학과 09학번 김중원\n" +
 					"Purpose : Java programming 13년 2학년 1학기 10주차 과제\n" +
@@ -100,8 +100,10 @@ public class frame extends Frame implements ActionListener {
 			break;
 		//p5 buttons
 		case "Output":
-			if(stuIndex == 0) //check array value
-				popupMsg("Error!!", "Please enter the information to text field at left panel.");
+			if(stuIndex == 0) { //check array value
+				popupMsg(3, "Error!!", "Please enter the information to text field at left panel.");
+				break;
+			}
 			if(checkEmpty())//Check Empty field
 				break;
 			
@@ -114,11 +116,13 @@ public class frame extends Frame implements ActionListener {
 		case "Clear":
 			p5_ta.setText("");
 			break;
+			
 		case "Exit":
 			this.setVisible(false);
 			this.dispose();
 			System.exit(0);
 			break;
+			
 		//p6 buttons	
 		case "Array Save":
 			//check empty field
@@ -133,7 +137,7 @@ public class frame extends Frame implements ActionListener {
 			
 		case "Array Output":
 			if(stuIndex == 0) { //check array value
-				popupMsg("Error!!", "Please save the information of students.");
+				popupMsg(3, "Error!!", "Please save the information of students.");
 				break;
 			}
 				
@@ -174,7 +178,7 @@ public class frame extends Frame implements ActionListener {
 		case "RAF load":
 			break;
 		case "DB SAVE":
-			if(stuIndex == 0) { popupMsg("Alert", "No data to be stored.");	break; }
+			if(stuIndex == 0) { popupMsg(2, "Alert", "No data to be stored.");	break; }
 			connectDB();
 			String sql, name, num, food, music, movie, professor;
 			String num_DB[] = new String[100];
@@ -217,55 +221,76 @@ public class frame extends Frame implements ActionListener {
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
-			disconnectDB("When_Save");
-			popupMsg("알림", "Save complete.");
+			disconnectDB();
+			popupMsg(1, "알림", "Save complete.");
 			break;
 			
 		case "DB LOAD":
-			Students tmp = new Students();
-			
-			int kor, mat, eng;
-			connectDB();
-			try {
-				
-				rs = stmt.executeQuery( "SELECT * FROM information"	);
-				while(rs.next()) {
-					name =  rs.getString("name");
-					num = rs.getString("num");
-					kor = Integer.parseInt(rs.getString("kor"));
-					mat = Integer.parseInt(rs.getString("mat"));
-					eng = Integer.parseInt(rs.getString("eng"));
-					food = rs.getString("food");
-					music = rs.getString("music");
-					movie = rs.getString("movie");
-					professor = rs.getString("professor");
-					tmp.setValue(name, num, kor, mat, eng, food, music, movie, professor);
-					print_to_textarea(tmp);
-				}
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-			disconnectDB("when_Load");
-			//DB의 값을 순차적으로 읽어와 ta에 출력
-			popupMsg("Alert", "Load complete.");
+			DB_LOAD("SELECT * FROM information");
 			break;
 		case "DB Search":
-			//A.	새로운 프레임 생성
-			//B.	이름 or 학번을 입력받음.
-			//C.	입력받은 자료 근거로 탐색 후 ta에 출력.
+			try {
+				String[] button = {"Name Search", "Num Search", "CANCLE"};
+				int x = JOptionPane.showOptionDialog(f, "PLEASE SELECT SEARCH METHOD", "SEARCH SELECT", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.YES_NO_CANCEL_OPTION, null, button, button[0]);
+				switch(x) {
+				case 0: // Name search
+					name = JOptionPane.showInputDialog(f, "PLEASE ENTER THE NAME THAT YOU WANT SEARCH.");
+					sql = "SELECT * FROM information WHERE name = \"" + name + "\";";
+					DB_LOAD(sql);
+					break;
+				case 1: // Number search
+					num = JOptionPane.showInputDialog(f, "PLEASE ENTER THE NUMBER THAT YOU WANT SEARCH.");
+					sql = "SELECT * FROM information WHERE num = \"" + num + "\";";
+					DB_LOAD(sql);
+					break;
+				case 2: // Cancle
+					break;
+				}
+			} catch (Exception eSerach){
+				eSerach.printStackTrace();
+			}
 			break;
 		case "DB Delete":
-			/*
-			 *A. 3개의 버튼을 가진 dialog를 이용, 선택 삭제, 전체 삭제, 취소 중 선택
-			 *	i.	선택삭제
-			 *			1.	이름 or 학번 입력받음
-			 *			2.	삭제버튼을 누르면 DB에서 삭제
-			 *			3.	“삭제 완료”  알림창 출력
-			 *	
-			 *	ii. 전체 삭제
-			 *			1.	테이블 내용 전체 삭제
-			 *			2.	“삭제완료” 알림창 출력
-			 */
+			connectDB();
+			count = 0;
+			try{
+				rs = stmt.executeQuery( "SELECT num FROM information");
+				if(!rs.next()) {
+					popupMsg(2, "ALERT", "DB is empty.");
+					rs.close();
+					break;
+				}
+				String[] button = {"선택 삭제", "전체 삭제", "취소"};
+				int x = JOptionPane.showOptionDialog(f, "What do you want?", "Delete Option", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.YES_NO_CANCEL_OPTION, null, button, button[0]);
+				switch(x) {
+				case 0: // select drop
+					String delIndex = JOptionPane.showInputDialog(f, "삭제하고자 하는 학번을 입력해주세요");
+					sql = "DELETE FROM information WHERE num = \"" + delIndex + "\";";
+					do{
+						//입력한 데이터와 일치하는 값이 있을 경우 count를 증가시켜 존제 여부를 알림
+						if(delIndex.equals(rs.getString(1))) count++;	
+					} while(rs.next());
+						if(count == 0) {
+							popupMsg(2, "ALRERT", "NO DATA BE MATCHED INPUT NUMBER.");
+							break;
+						} else //일치하는 값이 있을 경우 해당 데이터 삭제
+							stmt.executeUpdate(sql);
+						popupMsg(1, "SUCCESS", "Delete complete.");
+					break;
+				
+				case 1: // all drop
+					sql = "TRUNCATE TABLE information;";
+					stmt.executeUpdate(sql);
+					popupMsg(1, "SUCCESS", "DATA DELETE COMPLETE.");
+					break;
+				
+				default: // cancle
+					break;
+				}
+			} catch (Exception delE) {
+				delE.printStackTrace();
+			}
+			disconnectDB();
 			break;
 		case "Open":
 			/*
@@ -281,7 +306,7 @@ public class frame extends Frame implements ActionListener {
 			break;
 		case "Sum of score":
 			if(stuIndex == 0) {
-				popupMsg("Alert", "No data to be calculate.");
+				popupMsg(1, "Alert", "No data to be calculate.");
 				break;
 			} else {
 				for(i=0; i<stuIndex; i++)
@@ -290,7 +315,7 @@ public class frame extends Frame implements ActionListener {
 			}
 		case "Ave of score":
 			if(stuIndex == 0) {
-				popupMsg("Alert", "No data to be calculate.");
+				popupMsg(1, "Alert", "No data to be calculate.");
 				break;
 			} else {
 				for(i=0; i<stuIndex; i++)
@@ -313,7 +338,7 @@ public class frame extends Frame implements ActionListener {
 			}
 		}
 		if(isEmpty) {
-			popupMsg("Error!!", atEmpty+"을 입력해주세요.");
+			popupMsg(3, "Error!!", atEmpty+"을 입력해주세요.");
 			return true;
 		}
 		//p1
@@ -323,21 +348,21 @@ public class frame extends Frame implements ActionListener {
 				p1_count++;
 		}
 		if(p1_count == p1_cb.length) {
-			popupMsg("Error!!", "음식을 선택해주세요.");
+			popupMsg(3, "Error!!", "음식을 선택해주세요.");
 			return true;
 		}
 		if(p1_cb[3].getState() && p1_tf.getText().equals("")) {
-			popupMsg("Error!!", "기타를 입력해주세요.");
+			popupMsg(3, "Error!!", "기타를 입력해주세요.");
 			return true;
 		}
 		//p2
 		if(p2_cbg.getSelectedCheckbox().getLabel().equals("기타") && p2_tf.getText().equals("")) {
-			popupMsg("Error!!", "기타를 입력해주세요.");
+			popupMsg(3, "Error!!", "기타를 입력해주세요.");
 			return true;
 		}
 		//p3
 		if(p3_list.getSelectedIndex() == -1) {
-			popupMsg("Error!!", "좋아하는 영화를 선택해주세요.");
+			popupMsg(3, "Error!!", "좋아하는 영화를 선택해주세요.");
 			return true;
 		}
 		return false;
@@ -348,7 +373,7 @@ public class frame extends Frame implements ActionListener {
 		try {
 			return Integer.parseInt(p0_tf[2].getText());
 		} catch(NumberFormatException error) {
-			popupMsg("Error!!", "성적에 숫자를 입력해주세요!");
+			popupMsg(3, "Error!!", "성적에 숫자를 입력해주세요!");
 			return -1;
 		}
 	}
@@ -356,7 +381,7 @@ public class frame extends Frame implements ActionListener {
 		try {
 			return Integer.parseInt(p0_tf[3].getText());
 		} catch(NumberFormatException error) {
-			popupMsg("Error!!", "성적에 숫자를 입력해주세요!");
+			popupMsg(3, "Error!!", "성적에 숫자를 입력해주세요!");
 			return -1;
 		}
 	}
@@ -364,7 +389,7 @@ public class frame extends Frame implements ActionListener {
 		try {
 			return Integer.parseInt(p0_tf[4].getText());
 		} catch(NumberFormatException error) {
-			popupMsg("Error!!", "성적에 숫자를 입력해주세요!");
+			popupMsg(3, "Error!!", "성적에 숫자를 입력해주세요!");
 			return -1;
 		}
 	}
@@ -651,9 +676,18 @@ public class frame extends Frame implements ActionListener {
 			});
 		}
 	}
-	void popupMsg(String title, String msg) {
-		JOptionPane.showMessageDialog(f, msg ,title, JOptionPane.WARNING_MESSAGE);
-		//JOptionPane.showConfirmDialog(f, "ok?", "title", JOptionPane.OK_CANCEL_OPTION);
+	void popupMsg(int type, String title, String msg) {
+		switch(type) {
+			case 1:
+				JOptionPane.showMessageDialog(f, msg ,title, JOptionPane.YES_NO_CANCEL_OPTION);
+				break;
+			case 2:
+				JOptionPane.showMessageDialog(f, msg ,title, JOptionPane.WARNING_MESSAGE);
+				break;
+			case 3:
+				JOptionPane.showMessageDialog(f, msg ,title, JOptionPane.ERROR_MESSAGE);
+				break;
+		}
 	}
 	
 	void connectDB() {
@@ -667,12 +701,45 @@ public class frame extends Frame implements ActionListener {
 		} catch(Exception e) { e.printStackTrace();	}
 	}
 	
-	void disconnectDB(String _switch) {
+	void disconnectDB() {
+		try 					{ stmt.close(); con.close();	}
+		catch (SQLException e) 	{ e.printStackTrace();			}
+	}
+	void DB_LOAD(String sql) {
+		//Students tmp = new Students();
+		boolean isnotEmpty;
+		String name, num, food, music, movie, professor;
+		int kor, mat, eng;
+		connectDB();
 		try {
-		if(_switch.equals("When_Save"))	{ stmt.close(); con.close(); }
-		else							{ rs.close(); stmt.close(); con.close(); }
+			rs = stmt.executeQuery(sql);
+			isnotEmpty = rs.next();
+			if(isnotEmpty) {
+				do {
+					name =  rs.getString("name");
+					num = rs.getString("num");
+					kor = Integer.parseInt(rs.getString("kor"));
+					mat = Integer.parseInt(rs.getString("mat"));
+					eng = Integer.parseInt(rs.getString("eng"));
+					food = rs.getString("food");
+					music = rs.getString("music");
+					movie = rs.getString("movie");
+					professor = rs.getString("professor");
+					student[stuIndex]= new Students(name, num, kor, mat, eng, food, music, movie, professor);
+					//tmp.setValue(name, num, kor, mat, eng, food, music, movie, professor);
+					print_to_textarea(student[stuIndex]);
+					//print_to_textarea(tmp);
+					stuIndex++;
+				} while(rs.next()); 
+				popupMsg(1, "ALERT", "LOAD COMPLETE.");
+			} else {
+				popupMsg(2, "ALERT", "DO NOT FIND DATA.");
+			}
+			rs.close();
+		} catch (Exception e1) {
+			e1.printStackTrace();
 		}
-		catch (SQLException e) 	{ e.printStackTrace();	}
+		disconnectDB();
 	}
 }
 /*
