@@ -1,10 +1,15 @@
 import java.awt.*; //for GUI
 import javax.swing.JOptionPane; //for Message Box
+import javax.swing.text.StyleContext.SmallAttributeSet;
+
+import org.omg.CORBA.Request;
+
 import java.awt.event.*; //for Button action
 import java.io.*;
 import java.sql.*;
 
 public class frame extends Frame implements ActionListener {
+	
 	public static frame f;
 	public static int i;
 	//Panel
@@ -48,6 +53,12 @@ public class frame extends Frame implements ActionListener {
 	//for Array logic
 	public Students student[] = new Students[100];
 	public int stuIndex=0; //for students count
+	//for DB connection
+	static String id="root";
+	static String password="root";
+	static Connection con;
+	static Statement stmt;
+	static ResultSet rs = null;
 	//생성자
 	public frame() {
 		super("KJW 성적관리 프로그램");
@@ -112,10 +123,9 @@ public class frame extends Frame implements ActionListener {
 		case "Array Save":
 			//check empty field
 			if(checkEmpty()) break;
-			
 			student[stuIndex] = new Students(get_Name(), get_Num(), getKor(),
 					getMat(), getEng(), getFavoriteFood(), getFavoriteMusic(),
-					getFavoriteMovie(), getFavoritProfessor(), stuIndex);
+					getFavoriteMovie(), getFavoritProfessor());
 			p5_ta.setText("");
 			print_to_textarea(student[stuIndex]);
 			stuIndex++;
@@ -164,16 +174,78 @@ public class frame extends Frame implements ActionListener {
 		case "RAF load":
 			break;
 		case "DB SAVE":
-			if(stuIndex == 0)
-				popupMsg("Alert", "No data to be stored.");
-			else if(stuIndex > 0) {
-				for(i=0; i<stuIndex; i++)
-					student[i].calculateAve();
-				//DB에 information 저장
-				popupMsg("알림", "Save complete..");
+			if(stuIndex == 0) { popupMsg("Alert", "No data to be stored.");	break; }
+			connectDB();
+			String sql, name, num, food, music, movie, professor;
+			String num_DB[] = new String[100];
+			num_DB[0] = "";
+			int count=0;
+			try {
+				/*rs = stmt.executeQuery("SELECT num FROM information");
+				while(rs.next()) { //DB로부터 num의 값들을 dump
+					num_DB[count] = rs.getString(1);
+					count++;
+				}*/
+				if(stuIndex > 0) {
+					for(i=0; i<stuIndex; i++) {
+						student[i].calculateAve();
+						//DB에 information 저장
+						/*
+						 * 같은 학번을 가진 자료가 DB에 존제할 경우 덮어씌울 건지를 물어본다.
+						 */
+						
+						if(!num_DB[0].equals("")) {
+							
+						}
+						sql = "INSERT INTO information VALUE " + "(" +
+								"null, " +
+								"\"" + student[i].name + "\"," +
+								"\"" + student[i].num + "\"," +
+								student[i].kor + "," +
+								student[i].mat + "," +
+								student[i].eng + "," +
+								student[i].sum + "," +
+								student[i].ave + "," +
+								"\"" + student[i].favorite_food + "\"," +
+								"\"" + student[i].favorite_music + "\"," +
+								"\"" + student[i].favorite_movie + "\"," +
+								"\"" + student[i].favorite_professor +"\")";
+						stmt.executeUpdate(sql);
+					}
+				}
+				
+			} catch (Exception e1) {
+				e1.printStackTrace();
 			}
+			disconnectDB("When_Save");
+			popupMsg("알림", "Save complete.");
 			break;
+			
 		case "DB LOAD":
+			Students tmp = new Students();
+			
+			int kor, mat, eng;
+			connectDB();
+			try {
+				
+				rs = stmt.executeQuery( "SELECT * FROM information"	);
+				while(rs.next()) {
+					name =  rs.getString("name");
+					num = rs.getString("num");
+					kor = Integer.parseInt(rs.getString("kor"));
+					mat = Integer.parseInt(rs.getString("mat"));
+					eng = Integer.parseInt(rs.getString("eng"));
+					food = rs.getString("food");
+					music = rs.getString("music");
+					movie = rs.getString("movie");
+					professor = rs.getString("professor");
+					tmp.setValue(name, num, kor, mat, eng, food, music, movie, professor);
+					print_to_textarea(tmp);
+				}
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+			disconnectDB("when_Load");
 			//DB의 값을 순차적으로 읽어와 ta에 출력
 			popupMsg("Alert", "Load complete.");
 			break;
@@ -324,7 +396,7 @@ public class frame extends Frame implements ActionListener {
 	private String getFavoriteMovie()	{	return p3_list.getSelectedItem();	}
 	private String getFavoritProfessor(){	return p4_choi.getSelectedItem();	}
 	private void print_to_textarea(Students pst) {
-		p5_ta.append("******* student " + pst.count +" *******\n\n");
+		p5_ta.append("******* student *******\n\n");
 		//p0
 		p5_ta.append("이름 : " + pst.name + "\n\n" + 
 					 "학번 : " + pst.num  + "\n\n" + 
@@ -582,6 +654,25 @@ public class frame extends Frame implements ActionListener {
 	void popupMsg(String title, String msg) {
 		JOptionPane.showMessageDialog(f, msg ,title, JOptionPane.WARNING_MESSAGE);
 		//JOptionPane.showConfirmDialog(f, "ok?", "title", JOptionPane.OK_CANCEL_OPTION);
+	}
+	
+	void connectDB() {
+		try {
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
+			String url = "jdbc:mysql://localhost:3306/students";
+			String option="?useUnicode=true&characterEncoding=EUCKR";
+			url = url + option;
+		    con = DriverManager.getConnection(url, id, password);
+		    stmt = con.createStatement();
+		} catch(Exception e) { e.printStackTrace();	}
+	}
+	
+	void disconnectDB(String _switch) {
+		try {
+		if(_switch.equals("When_Save"))	{ stmt.close(); con.close(); }
+		else							{ rs.close(); stmt.close(); con.close(); }
+		}
+		catch (SQLException e) 	{ e.printStackTrace();	}
 	}
 }
 /*
