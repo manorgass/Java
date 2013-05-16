@@ -1,4 +1,5 @@
 import java.awt.*; //for GUI
+
 import javax.swing.JOptionPane; //for Message Box
 import javax.swing.text.StyleContext.SmallAttributeSet;
 
@@ -12,6 +13,8 @@ public class frame extends Frame implements ActionListener {
 	
 	public static frame f;
 	public static int i;
+	//filediolog
+	FileDialog fd;
 	//Panel
 	public static Panel p[] = new Panel[7];
 	//Menu
@@ -24,6 +27,8 @@ public class frame extends Frame implements ActionListener {
 	public static MenuItem menu3_item[] = new MenuItem[4];
 	//PopupMenu
 	public static PopupMenu pm = new PopupMenu();
+	public static Menu pmm;
+	public static MenuItem pmmItem[] = new MenuItem[3];
 	public static MenuItem pmItem[] = new MenuItem[3];
 	//for p[0]
 	public static Label p0_l[] = new Label[5];
@@ -137,7 +142,7 @@ public class frame extends Frame implements ActionListener {
 			
 		case "Array Output":
 			if(stuIndex == 0) { //check array value
-				popupMsg(3, "Error!!", "Please save the information of students.");
+				popupMsg(2, "ALERT", "Please input the data by the 'Array Save' button.");
 				break;
 			}
 				
@@ -145,23 +150,37 @@ public class frame extends Frame implements ActionListener {
 			for(i=0; i<stuIndex; i++)
 				print_to_textarea(student[i]);
 			break;
-			
+		case "Save":	
 		case "File Save":
+			 
+	        FileDialog fd = new FileDialog(this, "file save", FileDialog.SAVE); 
+	        fd.setVisible(true); 
+	        String file_location = fd.getDirectory(); 
+	        file_location += fd.getFile();
+			
 			try {
-				FileWriter fw = new FileWriter("d:/dAtA.txt");
+				FileWriter fw = new FileWriter(file_location);
 				BufferedWriter bw = new BufferedWriter(fw);
-				
+					
 				bw.write(p5_ta.getText());
 				bw.close();
 			} catch (IOException IOe) {
 				IOe.printStackTrace();
 			}
+			
+			popupMsg(1, "ALERT", "SAVE COMPLETE");
 			break;
+		case "Open":
 		case "File Load":
+	        fd = new FileDialog(this, "file open", FileDialog.LOAD); 
+	        fd.setVisible(true); 
+	        file_location = fd.getDirectory(); 
+	        file_location += fd.getFile();
+	        
 			String buffer = "";
 			try
 			{
-				FileReader fr = new FileReader("d:/dAtA.txt");
+				FileReader fr = new FileReader(file_location);
 				BufferedReader br = new BufferedReader(fr);
 				
 				String line = null;
@@ -172,6 +191,7 @@ public class frame extends Frame implements ActionListener {
 			} 
 			catch (IOException IOe) { IOe.printStackTrace(); }
 			p5_ta.setText(buffer);
+			popupMsg(1, "ALERT", "LOAD COMPLETE");
 			break;
 		case "RAF save":
 			break;
@@ -229,7 +249,14 @@ public class frame extends Frame implements ActionListener {
 			DB_LOAD("SELECT * FROM information");
 			break;
 		case "DB Search":
+			connectDB();
 			try {
+				rs = stmt.executeQuery( "SELECT num FROM information");
+				if(!rs.next()) {
+					popupMsg(2, "ALERT", "DB is empty.");
+					rs.close();
+					break;
+				} else { rs.close(); disconnectDB(); }
 				String[] button = {"Name Search", "Num Search", "CANCLE"};
 				int x = JOptionPane.showOptionDialog(f, "PLEASE SELECT SEARCH METHOD", "SEARCH SELECT", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.YES_NO_CANCEL_OPTION, null, button, button[0]);
 				switch(x) {
@@ -284,6 +311,7 @@ public class frame extends Frame implements ActionListener {
 					popupMsg(1, "SUCCESS", "DATA DELETE COMPLETE.");
 					break;
 				
+					
 				default: // cancle
 					break;
 				}
@@ -292,17 +320,12 @@ public class frame extends Frame implements ActionListener {
 			}
 			disconnectDB();
 			break;
-		case "Open":
-			/*
-			 * 파일 탐색기를 열어 텍스트파일을 선택, ta에 출력
-			 */
-			break;
-		case "Save":
-			/*
-			 * 원하는 위치에 원하는 이름으로 txt파일을 저장
-			 */
-			break;
+		
+			
+		
+			
 		case "Edit":
+			p5_ta.setEditable(true);
 			break;
 		case "Sum of score":
 			if(stuIndex == 0) {
@@ -322,6 +345,16 @@ public class frame extends Frame implements ActionListener {
 					student[i].calculateAve();
 				break;
 			}
+			
+		case "BLACK":
+			setColor(Color.BLACK);
+			break;
+		case "PINK":
+			setColor(Color.PINK);
+			break;
+		case "CYON":
+			setColor(Color.CYAN);
+			break;
 		}		
 	}
 	
@@ -462,6 +495,12 @@ public class frame extends Frame implements ActionListener {
 		for(i=0; i<menu1_item.length; i++)
 			menu[1].add(menu1_item[i]);
 		menu[2] = new Menu("DataBase");
+		menu2_item[0] = new MenuItem("DB LOAD");
+		menu2_item[1] = new MenuItem("DB SAVE");
+		menu2_item[2] = new MenuItem("DB Search");
+		menu2_item[3] = new MenuItem("DB Delete");
+		for(i=0; i<menu2_item.length; i++)
+			menu[2].add(menu2_item[i]);
 		menu[3] = new Menu("Help");
 		menu3_item[0] = new MenuItem("About this program...");
 		menu[3].add(menu3_item[0]);
@@ -473,6 +512,13 @@ public class frame extends Frame implements ActionListener {
 		pmItem[2] = new MenuItem("Paste");
 		for(i=0; i<pmItem.length; i++)
 			pm.add(pmItem[i]);
+		Menu pmm = new Menu("Color");
+		pmmItem[0] = new MenuItem("BLACK");
+		pmmItem[1] = new MenuItem("PINK");
+		pmmItem[2] = new MenuItem("CYON");
+		for(i=0; i<pmmItem.length; i++)
+			pmm.add(pmmItem[i]);
+		pm.add(pmm);
 		//Panel 0
 		p0_l[0] = new Label("이름: ", Label.CENTER);
 		p0_l[1] = new Label("학번: ", Label.CENTER);
@@ -646,9 +692,17 @@ public class frame extends Frame implements ActionListener {
 		/*
 		 * Add Action Listener
 		 */
+		//PopupMenu
+		for(i=0; i<pmItem.length; i++)
+			pmItem[i].addActionListener(this);
+		for(i=0; i<pmmItem.length; i++)
+			pmmItem[i].addActionListener(this);
 		//Menu
-		for(i=0; i<menu0_item.length; i++)
+		for(i=0; i<menu0_item.length; i++) {
 			menu0_item[i].addActionListener(this);
+			menu2_item[i].addActionListener(this);
+		}
+		
 		for(i=0; i<menu1_item.length; i++)
 			menu1_item[i].addActionListener(this);
 		menu3_item[0].addActionListener(this);
@@ -671,7 +725,7 @@ public class frame extends Frame implements ActionListener {
 			p[i].addMouseListener(new MouseAdapter() {
 				public void mousePressed(MouseEvent me) {
 					if(me.getModifiers() == me.BUTTON3_MASK)
-						pm.show(f, me.getXOnScreen(), me.getYOnScreen());
+						pm.show(f, me.getXOnScreen()-40, me.getYOnScreen()-40);
 				}
 			});
 		}
@@ -688,6 +742,17 @@ public class frame extends Frame implements ActionListener {
 				JOptionPane.showMessageDialog(f, msg ,title, JOptionPane.ERROR_MESSAGE);
 				break;
 		}
+	}
+	
+	void setColor(Color color) {
+		p[1].setBackground(color);
+		p[3].setBackground(color);
+		p[5].setBackground(color);
+		p1_l.setBackground(color);
+		for(i=0; i<p1_cb.length; i++)
+			p1_cb[i].setBackground(color);
+		p3_l.setBackground(color);
+		p5_l.setBackground(color);
 	}
 	
 	void connectDB() {
