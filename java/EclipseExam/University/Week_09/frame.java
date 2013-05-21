@@ -1,60 +1,60 @@
 import java.awt.*; //for GUI
 
-import javax.swing.JOptionPane; //for Message Box
-import javax.swing.text.StyleContext.SmallAttributeSet;
+import javax.swing.*;
 
 import org.omg.CORBA.Request;
 
 import java.awt.event.*; //for Button action
 import java.io.*;
 import java.sql.*;
+import java.util.Vector;
 
 public class frame extends Frame implements ActionListener {
 	
-	public static frame f;
+	public static JFrame f;
 	public static int i;
 	//filediolog
 	FileDialog fd;
 	//Panel
-	public static Panel p[] = new Panel[7];
+	public static JPanel p[] = new JPanel[7];
 	//Menu
 	//new MenuShortcut 으로 단축키 생성 가능
 	public static MenuBar mb = new MenuBar();
-	public static Menu menu[] = new Menu[4];
-	public static MenuItem menu0_item[] = new MenuItem[4];
-	public static MenuItem menu1_item[] = new MenuItem[2];
-	public static MenuItem menu2_item[] = new MenuItem[4];
-	public static MenuItem menu3_item[] = new MenuItem[4];
+	public static JMenu menu[] = new JMenu[4];
+	public static JMenuItem menu0_item[] = new JMenuItem[4];
+	public static JMenuItem menu1_item[] = new JMenuItem[2];
+	public static JMenuItem menu2_item[] = new JMenuItem[4];
+	public static JMenuItem menu3_item[] = new JMenuItem[4];
 	//PopupMenu
-	public static PopupMenu pm = new PopupMenu();
-	public static Menu pmm;
-	public static MenuItem pmmItem[] = new MenuItem[3];
-	public static MenuItem pmItem[] = new MenuItem[3];
+	public static JPopupMenu pm = new JPopupMenu();
+	public static JMenu pmm;
+	public static JMenuItem pmmItem[] = new JMenuItem[3];
+	public static JMenuItem pmItem[] = new JMenuItem[3];
 	//for p[0]
-	public static Label p0_l[] = new Label[5];
-	public static TextField p0_tf[] = new TextField[5];
+	public static JLabel p0_l[] = new JLabel[5];
+	public static JTextField p0_tf[] = new JTextField[5];
 	//for p[1]
-	public static Label p1_l;
-	public static Checkbox p1_cb[] = new Checkbox[4];
-	public static TextField p1_tf;
+	public static JLabel p1_l;
+	public static JCheckBox p1_cb[] = new JCheckBox[4];
+	public static JTextField p1_tf;
 	//for p[2]
-	public static Label p2_l;
-	public static Checkbox p2_cb[] = new Checkbox[4];
+	public static JLabel p2_l;
+	public static JRadioButton p2_rb[] = new JRadioButton[4];
 	public static CheckboxGroup p2_cbg;
-	public static TextField p2_tf;
+	public static JTextField p2_tf;
 	//for p[3]
-	public static Label p3_l;
-	public static List p3_list;
+	public static JLabel p3_l;
+	public static JList p3_list;
 	//for p[4]
-	public static Label p4_l;
+	public static JLabel p4_l;
 	public static Choice p4_choi;
 	//for p[5]
 	public static Font font;
-	public static Label p5_l;
-	public static TextArea p5_ta;
-	public static Button p5_b[] = new Button[3];
+	public static JLabel p5_l;
+	public static JTextArea p5_ta;
+	public static JButton p5_b[] = new JButton[3];
 	//for p[6]
-	public static Button p6_b[] = new Button[10];
+	public static JButton p6_b[] = new JButton[10];
 	//for Array logic
 	public static Students student[] = new Students[100];
 	public static int stuIndex=0; //for students count
@@ -84,7 +84,7 @@ public class frame extends Frame implements ActionListener {
 	 * Main Function
 	 */
 	public static void main(String[] args) {
-		f = new frame();
+		f = new JFrame();
 	}
 	/*
 	 * for ActionEvents
@@ -377,14 +377,14 @@ public class frame extends Frame implements ActionListener {
 		//p1
 		int p1_count = 0;
 		for(i=0; i<p1_cb.length; i++) {
-			if(!p1_cb[i].getState())
+			if(!p1_cb[i].isSelected())
 				p1_count++;
 		}
 		if(p1_count == p1_cb.length) {
 			popupMsg(3, "Error!!", "음식을 선택해주세요.");
 			return true;
 		}
-		if(p1_cb[3].getState() && p1_tf.getText().equals("")) {
+		if(p1_cb[3].isSelected() && p1_tf.getText().equals("")) {
 			popupMsg(3, "Error!!", "기타를 입력해주세요.");
 			return true;
 		}
@@ -430,13 +430,13 @@ public class frame extends Frame implements ActionListener {
 		String sumString = "";
 		int count = 0;
 		for(i=0; i<p1_cb.length; i++) {
-			if(p1_cb[i].getState() && i<p1_cb.length-1) {
+			if(p1_cb[i].isSelected() && i<p1_cb.length-1) {
 				if(count>1)
 					sumString += ", ";
 				sumString += p1_cb[i].getLabel();
 				count++;
 			}
-			else if(p1_cb[i].getState() && i == p1_cb.length-1) {
+			else if(p1_cb[i].isSelected() && i == p1_cb.length-1) {
 				if(count>1)
 					sumString += ", ";
 				sumString += p1_tf.getText();
@@ -451,7 +451,7 @@ public class frame extends Frame implements ActionListener {
 		else
 			return p2_tf.getText();
 	}
-	private String getFavoriteMovie()	{	return p3_list.getSelectedItem();	}
+	private String getFavoriteMovie()	{	return data[p3_list.getSelectedIndex()];	}
 	private String getFavoritProfessor(){	return p4_choi.getSelectedItem();	}
 	private void print_to_textarea(Students pst) {
 		p5_ta.append("******* student *******\n\n");
@@ -480,82 +480,83 @@ public class frame extends Frame implements ActionListener {
 		 * Create Components
 		 */
 		//Panel
-		for(i=0; i<p.length; i++) p[i] = new Panel();
+		for(i=0; i<p.length; i++) p[i] = new JPanel();
 		//Menu
-		menu[0] = new Menu("File");
-		menu0_item[0] = new MenuItem("Open");
-		menu0_item[1] = new MenuItem("Save");
-		menu0_item[2] = new MenuItem("Edit");
-		menu0_item[3] = new MenuItem("Exit");
+		menu[0] = new JMenu("File");
+		menu0_item[0] = new JMenuItem("Open");
+		menu0_item[1] = new JMenuItem("Save");
+		menu0_item[2] = new JMenuItem("Edit");
+		menu0_item[3] = new JMenuItem("Exit");
 		for(i=0; i<menu0_item.length; i++)
 			menu[0].add(menu0_item[i]);
-		menu[1] = new Menu("Calculator");
-		menu1_item[0] = new MenuItem("Sum of score");
-		menu1_item[1] = new MenuItem("Ave of score");
+		menu[1] = new JMenu("Calculator");
+		menu1_item[0] = new JMenuItem("Sum of score");
+		menu1_item[1] = new JMenuItem("Ave of score");
 		for(i=0; i<menu1_item.length; i++)
 			menu[1].add(menu1_item[i]);
-		menu[2] = new Menu("DataBase");
-		menu2_item[0] = new MenuItem("DB LOAD");
-		menu2_item[1] = new MenuItem("DB SAVE");
-		menu2_item[2] = new MenuItem("DB Search");
-		menu2_item[3] = new MenuItem("DB Delete");
+		menu[2] = new JMenu("DataBase");
+		menu2_item[0] = new JMenuItem("DB LOAD");
+		menu2_item[1] = new JMenuItem("DB SAVE");
+		menu2_item[2] = new JMenuItem("DB Search");
+		menu2_item[3] = new JMenuItem("DB Delete");
 		for(i=0; i<menu2_item.length; i++)
 			menu[2].add(menu2_item[i]);
-		menu[3] = new Menu("Help");
-		menu3_item[0] = new MenuItem("About this program...");
+		menu[3] = new JMenu("Help");
+		menu3_item[0] = new JMenuItem("About this program...");
 		menu[3].add(menu3_item[0]);
 		for(i=0; i<menu.length; i++)
 			mb.add(menu[i]);
 		//Popup menu
-		pmItem[0] = new MenuItem("Edit");
-		pmItem[1] = new MenuItem("Copy");
-		pmItem[2] = new MenuItem("Paste");
+		pmItem[0] = new JMenuItem("Edit");
+		pmItem[1] = new JMenuItem("Copy");
+		pmItem[2] = new JMenuItem("Paste");
 		for(i=0; i<pmItem.length; i++)
 			pm.add(pmItem[i]);
 		Menu pmm = new Menu("Color");
-		pmmItem[0] = new MenuItem("BLACK");
-		pmmItem[1] = new MenuItem("PINK");
-		pmmItem[2] = new MenuItem("CYON");
+		pmmItem[0] = new JMenuItem("BLACK");
+		pmmItem[1] = new JMenuItem("PINK");
+		pmmItem[2] = new JMenuItem("CYON");
 		for(i=0; i<pmmItem.length; i++)
 			pmm.add(pmmItem[i]);
 		pm.add(pmm);
 		//Panel 0
-		p0_l[0] = new Label("이름: ", Label.CENTER);
-		p0_l[1] = new Label("학번: ", Label.CENTER);
-		p0_l[2] = new Label("국어: ", Label.CENTER);
-		p0_l[3] = new Label("수학: ", Label.CENTER);
-		p0_l[4] = new Label("영어: ", Label.CENTER);
+		p0_l[0] = new JLabel("이름: ", Label.CENTER);
+		p0_l[1] = new JLabel("학번: ", Label.CENTER);
+		p0_l[2] = new JLabel("국어: ", Label.CENTER);
+		p0_l[3] = new JLabel("수학: ", Label.CENTER);
+		p0_l[4] = new JLabel("영어: ", Label.CENTER);
 		for(i=0; i<p0_tf.length; i++)
-			p0_tf[i] = new TextField(null);
+			p0_tf[i] = new JTextField(null);
 		//Panel 1
-		p1_l = new Label("Favorite food", Label.CENTER);
+		p1_l = new JLabel("Favorite food", Label.CENTER);
 		p1_l.setForeground(Color.WHITE);
-		p1_cb[0] = new Checkbox("짜장");
-		p1_cb[1] = new Checkbox("짬뽕");
-		p1_cb[2] = new Checkbox("라면");
-		p1_cb[3] = new Checkbox("기타");
+		p1_cb[0] = new JCheckBox("짜장");
+		p1_cb[1] = new JCheckBox("짬뽕");
+		p1_cb[2] = new JCheckBox("라면");
+		p1_cb[3] = new JCheckBox("기타");
 		for(i=0; i<p1_cb.length; i++)
 			p1_cb[i].setForeground(Color.WHITE);
-		p1_tf = new TextField();
+		p1_tf = new JTextField();
 		//Panel 2
-		p2_l = new Label("Favorite music", Label.CENTER);
+		p2_l = new JLabel("Favorite music", Label.CENTER);
 		p2_cbg = new CheckboxGroup();
-		p2_cb[0] = new Checkbox("힙합", p2_cbg ,true);
-		p2_cb[1] = new Checkbox("메탈", p2_cbg ,false);
-		p2_cb[2] = new Checkbox("댄스", p2_cbg ,false);
-		p2_cb[3] = new Checkbox("기타", p2_cbg ,false); 
-		p2_tf = new TextField();
+		p2_rb[0] = new JRadioButton("힙합" ,true);
+		p2_rb[1] = new JRadioButton("메탈" ,false);
+		p2_rb[2] = new JRadioButton("댄스" ,false);
+		p2_rb[3] = new JRadioButton("기타" ,false); 
+		p2_tf = new JTextField();
 		//Panel 3
-		p3_l = new Label("Favorite movie", Label.CENTER);
+		p3_l = new JLabel("Favorite movie", Label.CENTER);
 		p3_l.setForeground(Color.WHITE);
-		p3_list = new List();
-		p3_list.add("Iron man");
-		p3_list.add("Hulk");
-		p3_list.add("Saw");
-		p3_list.add("Superman");
-		p3_list.add("Darknigth");
+		p3_list = new JList();
+		Vector p3_vector;
+		String p3_list_data[] = {"Iron man", "Hulk", "Saw", "Superman", "Darknigth" };
+		for(i=0; i<data.length; i++)
+			list_data.addElement(data[i]);
+		p3_list.setListData(list_data);
+		
 		//Panel 4
-		p4_l = new Label("Favorite professor", Label.CENTER);
+		p4_l = new JLabel("Favorite professor", Label.CENTER);
 		p4_choi = new Choice();
 		p4_choi.add("김도완");
 		p4_choi.add("박두영");
@@ -565,25 +566,25 @@ public class frame extends Frame implements ActionListener {
 		p4_choi.add("주기호");
 		//Panel 5
 		font = new Font("", Font.BOLD, 15);
-		p5_l = new Label("Output field", Label.CENTER);
+		p5_l = new JLabel("Output field", Label.CENTER);
 		p5_l.setFont(font);
 		p5_l.setForeground(Color.WHITE);
-		p5_ta = new TextArea();
+		p5_ta = new JTextArea();
 		p5_ta.setEditable(false); //출력전용
-		p5_b[0] = new Button("Output");
-		p5_b[1] = new Button("Clear");
-		p5_b[2] = new Button("Exit");
+		p5_b[0] = new JButton("Output");
+		p5_b[1] = new JButton("Clear");
+		p5_b[2] = new JButton("Exit");
 		//Panel 6
-		p6_b[0] = new Button("Array Save");
-		p6_b[1] = new Button("Array Output");
-		p6_b[2] = new Button("File Save");
-		p6_b[3] = new Button("File Load");
-		p6_b[4] = new Button("RAF save");
-		p6_b[5] = new Button("RAF load");
-		p6_b[6] = new Button("DB SAVE");
-		p6_b[7] = new Button("DB LOAD");
-		p6_b[8] = new Button("DB Search");
-		p6_b[9] = new Button("DB Delete");
+		p6_b[0] = new JButton("Array Save");
+		p6_b[1] = new JButton("Array Output");
+		p6_b[2] = new JButton("File Save");
+		p6_b[3] = new JButton("File Load");
+		p6_b[4] = new JButton("RAF save");
+		p6_b[5] = new JButton("RAF load");
+		p6_b[6] = new JButton("DB SAVE");
+		p6_b[7] = new JButton("DB LOAD");
+		p6_b[8] = new JButton("DB Search");
+		p6_b[9] = new JButton("DB Delete");
 	}
 	
 	private void settingComponents() {
@@ -627,10 +628,10 @@ public class frame extends Frame implements ActionListener {
 		p1_tf.		setBounds(70, 66, 70, 20);
 		//Panel 2
 		p2_l.		setBounds(0, 10, 170, 25);
-		p2_cb[0].	setBounds(20, 40, 40, 15);
-		p2_cb[1].	setBounds(70, 40, 40, 15);
-		p2_cb[2].	setBounds(120, 40, 40, 15);
-		p2_cb[3].	setBounds(20, 70, 40, 15);
+		p2_rb[0].	setBounds(20, 40, 40, 15);
+		p2_rb[1].	setBounds(70, 40, 40, 15);
+		p2_rb[2].	setBounds(120, 40, 40, 15);
+		p2_rb[3].	setBounds(20, 70, 40, 15);
 		p2_tf.		setBounds(70, 66, 70, 20);
 		//Panel 3
 		p3_l.setBounds(0, 10, 170, 25);
@@ -664,8 +665,8 @@ public class frame extends Frame implements ActionListener {
 		p[1].add(p1_tf);
 		//Panel 2
 		p[2].add(p2_l);
-		for(i=0; i<p2_cb.length; i++)
-			p[2].add(p2_cb[i]);
+		for(i=0; i<p2_rb.length; i++)
+			p[2].add(p2_rb[i]);
 		p[2].add(p2_tf);
 		//Panel 3
 		p[3].add(p3_l);
