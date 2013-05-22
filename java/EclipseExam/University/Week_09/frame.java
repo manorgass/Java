@@ -1,16 +1,12 @@
 import java.awt.*; //for GUI
-
 import javax.swing.*;
-
 import org.omg.CORBA.Request;
-
 import java.awt.event.*; //for Button action
 import java.io.*;
 import java.sql.*;
 import java.util.Vector;
 
-public class frame extends Frame implements ActionListener {
-	
+public class frame extends JFrame implements ActionListener {
 	public static JFrame f;
 	public static int i;
 	//filediolog
@@ -19,7 +15,7 @@ public class frame extends Frame implements ActionListener {
 	public static JPanel p[] = new JPanel[7];
 	//Menu
 	//new MenuShortcut 으로 단축키 생성 가능
-	public static MenuBar mb = new MenuBar();
+	public static JMenuBar mb = new JMenuBar();
 	public static JMenu menu[] = new JMenu[4];
 	public static JMenuItem menu0_item[] = new JMenuItem[4];
 	public static JMenuItem menu1_item[] = new JMenuItem[2];
@@ -40,17 +36,20 @@ public class frame extends Frame implements ActionListener {
 	//for p[2]
 	public static JLabel p2_l;
 	public static JRadioButton p2_rb[] = new JRadioButton[4];
-	public static CheckboxGroup p2_cbg;
+	public static ButtonGroup p2_bg;
 	public static JTextField p2_tf;
 	//for p[3]
 	public static JLabel p3_l;
 	public static JList p3_list;
+	public static JScrollPane p3_sp;
+	public static String p3_list_data[] = new String[5];
 	//for p[4]
 	public static JLabel p4_l;
 	public static Choice p4_choi;
 	//for p[5]
 	public static Font font;
 	public static JLabel p5_l;
+	public static JScrollPane p5_sp;
 	public static JTextArea p5_ta;
 	public static JButton p5_b[] = new JButton[3];
 	//for p[6]
@@ -67,24 +66,24 @@ public class frame extends Frame implements ActionListener {
 	//생성자
 	public frame() {
 		super("KJW 성적관리 프로그램");
-		this.setLayout(null);
-		this.setSize(505, 655);
+		this.getContentPane().setLayout(null);
+		this.setSize(505 + 30, 655);
 		this.setLocation(40,40);
-		this.addWindowListener(new EventHandler()); //for Exit
 		this.setResizable(false); //for fixing size
 		
 		makeComponents();
 		settingComponents();
 		addComponents();
 		
-		this.setMenuBar(mb);
+		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+		this.setJMenuBar(mb);
 		this.setVisible(true);
 	}
 	/*
 	 * Main Function
 	 */
 	public static void main(String[] args) {
-		f = new JFrame();
+		f = new frame();
 	}
 	/*
 	 * for ActionEvents
@@ -138,6 +137,7 @@ public class frame extends Frame implements ActionListener {
 			p5_ta.setText("");
 			print_to_textarea(student[stuIndex]);
 			stuIndex++;
+			popupMsg(1, "ALERT", "SAVE COMPLETE.");
 			break;
 			
 		case "Array Output":
@@ -149,6 +149,7 @@ public class frame extends Frame implements ActionListener {
 			p5_ta.setText("");
 			for(i=0; i<stuIndex; i++)
 				print_to_textarea(student[i]);
+			popupMsg(1, "ALERT", "OUTPUT COMPLETE.");
 			break;
 		case "Save":	
 		case "File Save":
@@ -246,6 +247,7 @@ public class frame extends Frame implements ActionListener {
 			break;
 			
 		case "DB LOAD":
+			p5_ta.setText("");
 			DB_LOAD("SELECT * FROM information");
 			break;
 		case "DB Search":
@@ -263,11 +265,13 @@ public class frame extends Frame implements ActionListener {
 				case 0: // Name search
 					name = JOptionPane.showInputDialog(f, "PLEASE ENTER THE NAME THAT YOU WANT SEARCH.");
 					sql = "SELECT * FROM information WHERE name = \"" + name + "\";";
+					p5_ta.setText("");
 					DB_LOAD(sql);
 					break;
 				case 1: // Number search
 					num = JOptionPane.showInputDialog(f, "PLEASE ENTER THE NUMBER THAT YOU WANT SEARCH.");
 					sql = "SELECT * FROM information WHERE num = \"" + num + "\";";
+					p5_ta.setText("");
 					DB_LOAD(sql);
 					break;
 				case 2: // Cancle
@@ -321,9 +325,6 @@ public class frame extends Frame implements ActionListener {
 			disconnectDB();
 			break;
 		
-			
-		
-			
 		case "Edit":
 			p5_ta.setEditable(true);
 			break;
@@ -352,8 +353,8 @@ public class frame extends Frame implements ActionListener {
 		case "PINK":
 			setColor(Color.PINK);
 			break;
-		case "CYON":
-			setColor(Color.CYAN);
+		case "DARK GRAY":
+			setColor(Color.DARK_GRAY);
 			break;
 		}		
 	}
@@ -389,7 +390,7 @@ public class frame extends Frame implements ActionListener {
 			return true;
 		}
 		//p2
-		if(p2_cbg.getSelectedCheckbox().getLabel().equals("기타") && p2_tf.getText().equals("")) {
+		if(p2_rb[3].isSelected() && p2_tf.getText().equals("")) {
 			popupMsg(3, "Error!!", "기타를 입력해주세요.");
 			return true;
 		}
@@ -446,12 +447,13 @@ public class frame extends Frame implements ActionListener {
 		return sumString;
 	}
 	private String getFavoriteMusic()	{
-		if(p2_cbg.getSelectedCheckbox().getLabel() != "기타") 
-			return p2_cbg.getSelectedCheckbox().getLabel();
-		else
-			return p2_tf.getText();
+		for(i=0; i<p2_rb.length-1; i++) {
+			if(p2_rb[i].isSelected())
+				return p2_rb[i].getText();
+		}
+		return p2_tf.getText();
 	}
-	private String getFavoriteMovie()	{	return data[p3_list.getSelectedIndex()];	}
+	private String getFavoriteMovie()	{	return p3_list_data[p3_list.getSelectedIndex()];	}
 	private String getFavoritProfessor(){	return p4_choi.getSelectedItem();	}
 	private void print_to_textarea(Students pst) {
 		p5_ta.append("******* student *******\n\n");
@@ -512,23 +514,23 @@ public class frame extends Frame implements ActionListener {
 		pmItem[2] = new JMenuItem("Paste");
 		for(i=0; i<pmItem.length; i++)
 			pm.add(pmItem[i]);
-		Menu pmm = new Menu("Color");
+		JMenu pmm = new JMenu("Color");
 		pmmItem[0] = new JMenuItem("BLACK");
 		pmmItem[1] = new JMenuItem("PINK");
-		pmmItem[2] = new JMenuItem("CYON");
+		pmmItem[2] = new JMenuItem("DARK GRAY");
 		for(i=0; i<pmmItem.length; i++)
 			pmm.add(pmmItem[i]);
 		pm.add(pmm);
 		//Panel 0
-		p0_l[0] = new JLabel("이름: ", Label.CENTER);
-		p0_l[1] = new JLabel("학번: ", Label.CENTER);
-		p0_l[2] = new JLabel("국어: ", Label.CENTER);
-		p0_l[3] = new JLabel("수학: ", Label.CENTER);
-		p0_l[4] = new JLabel("영어: ", Label.CENTER);
+		p0_l[0] = new JLabel("이름: ", JLabel.CENTER);
+		p0_l[1] = new JLabel("학번: ", JLabel.CENTER);
+		p0_l[2] = new JLabel("국어: ", JLabel.CENTER);
+		p0_l[3] = new JLabel("수학: ", JLabel.CENTER);
+		p0_l[4] = new JLabel("영어: ", JLabel.CENTER);
 		for(i=0; i<p0_tf.length; i++)
 			p0_tf[i] = new JTextField(null);
 		//Panel 1
-		p1_l = new JLabel("Favorite food", Label.CENTER);
+		p1_l = new JLabel("Favorite food", JLabel.CENTER);
 		p1_l.setForeground(Color.WHITE);
 		p1_cb[0] = new JCheckBox("짜장");
 		p1_cb[1] = new JCheckBox("짬뽕");
@@ -538,25 +540,28 @@ public class frame extends Frame implements ActionListener {
 			p1_cb[i].setForeground(Color.WHITE);
 		p1_tf = new JTextField();
 		//Panel 2
-		p2_l = new JLabel("Favorite music", Label.CENTER);
-		p2_cbg = new CheckboxGroup();
+		p2_l = new JLabel("Favorite music", JLabel.CENTER);
+		p2_bg = new ButtonGroup();
 		p2_rb[0] = new JRadioButton("힙합" ,true);
 		p2_rb[1] = new JRadioButton("메탈" ,false);
 		p2_rb[2] = new JRadioButton("댄스" ,false);
-		p2_rb[3] = new JRadioButton("기타" ,false); 
+		p2_rb[3] = new JRadioButton("기타" ,false);
+		for(i=0; i<p2_rb.length; i++)
+			p2_bg.add(p2_rb[i]);
 		p2_tf = new JTextField();
 		//Panel 3
-		p3_l = new JLabel("Favorite movie", Label.CENTER);
+		p3_l = new JLabel("Favorite movie", JLabel.CENTER);
 		p3_l.setForeground(Color.WHITE);
 		p3_list = new JList();
-		Vector p3_vector;
-		String p3_list_data[] = {"Iron man", "Hulk", "Saw", "Superman", "Darknigth" };
-		for(i=0; i<data.length; i++)
-			list_data.addElement(data[i]);
-		p3_list.setListData(list_data);
-		
+		p3_list_data[0] = new String("Iron man");
+		p3_list_data[1] = new String("Hulk");
+		p3_list_data[2] = new String("Saw");
+		p3_list_data[3] = new String("Superman");
+		p3_list_data[4] = new String("Darknigth");
+		p3_list = new JList(p3_list_data);
+		p3_sp = new JScrollPane(p3_list);  // for scroll bar
 		//Panel 4
-		p4_l = new JLabel("Favorite professor", Label.CENTER);
+		p4_l = new JLabel("Favorite professor", JLabel.CENTER);
 		p4_choi = new Choice();
 		p4_choi.add("김도완");
 		p4_choi.add("박두영");
@@ -566,11 +571,13 @@ public class frame extends Frame implements ActionListener {
 		p4_choi.add("주기호");
 		//Panel 5
 		font = new Font("", Font.BOLD, 15);
-		p5_l = new JLabel("Output field", Label.CENTER);
+		p5_l = new JLabel("Output field", JLabel.CENTER);
 		p5_l.setFont(font);
 		p5_l.setForeground(Color.WHITE);
 		p5_ta = new JTextArea();
-		p5_ta.setEditable(false); //출력전용
+		p5_ta.setEditable(false); //only display
+		p5_ta.setLineWrap(true);  //auto line wrap
+		p5_sp = new JScrollPane(p5_ta);
 		p5_b[0] = new JButton("Output");
 		p5_b[1] = new JButton("Clear");
 		p5_b[2] = new JButton("Exit");
@@ -586,34 +593,33 @@ public class frame extends Frame implements ActionListener {
 		p6_b[8] = new JButton("DB Search");
 		p6_b[9] = new JButton("DB Delete");
 	}
-	
 	private void settingComponents() {
 		/*
 		 * Setting for Panel
 		 */
 		//p[0]
-		p[0].setBounds(0, 65, 170-10, 120);
+		p[0].setBounds(0, 15, 170-10, 120);
 		p[0].setLayout(new GridLayout(5,2,0,5));
 		//p[1]
-		p[1].setBounds(0, 195, 170, 100);
+		p[1].setBounds(0, 145, 170, 100);
 		p[1].setLayout(null);
 		p[1].setBackground(Color.LIGHT_GRAY);
 		//p[2]
-		p[2].setBounds(0, 295, 170, 100);
+		p[2].setBounds(0, 245, 170, 100);
 		p[2].setLayout(null);
 		//p[3]
-		p[3].setBounds(0, 395, 170, 100);
+		p[3].setBounds(0, 345, 170, 100);
 		p[3].setLayout(null);
 		p[3].setBackground(Color.LIGHT_GRAY);
 		//p[4]
-		p[4].setBounds(0, 495, 170, 80);
+		p[4].setBounds(0, 445, 170, 80);
 		p[4].setLayout(null);
 		//p[5]
-		p[5].setBounds(170, 65, 330, 510);
+		p[5].setBounds(170, 15, 330 + 30, 510);
 		p[5].setLayout(null);
 		p[5].setBackground(Color.LIGHT_GRAY);
 		//p[6]
-		p[6].setBounds(0, 575, 500, 75);
+		p[6].setBounds(0, 525, 500 + 30, 75);
 		p[6].setLayout(new GridLayout(2,5,0,0));
 		/*
 		 * Size Setting for Components
@@ -621,33 +627,33 @@ public class frame extends Frame implements ActionListener {
 		//Panel 0
 		//Panel 1
 		p1_l.		setBounds(0, 10, 170, 25);
-		p1_cb[0].	setBounds(20, 40, 40, 15);
-		p1_cb[1].	setBounds(70, 40, 40, 15);
-		p1_cb[2].	setBounds(120, 40, 40, 15);
-		p1_cb[3].	setBounds(20, 70, 40, 15);
+		p1_cb[0].	setBounds(10, 40, 53, 15);
+		p1_cb[1].	setBounds(60, 40, 53, 15);
+		p1_cb[2].	setBounds(110, 40, 53, 15);
+		p1_cb[3].	setBounds(10, 70, 53, 15);
+		for(i=0; i<p1_cb.length; i++)
+			p1_cb[i].setBackground(Color.LIGHT_GRAY);
 		p1_tf.		setBounds(70, 66, 70, 20);
 		//Panel 2
 		p2_l.		setBounds(0, 10, 170, 25);
-		p2_rb[0].	setBounds(20, 40, 40, 15);
-		p2_rb[1].	setBounds(70, 40, 40, 15);
-		p2_rb[2].	setBounds(120, 40, 40, 15);
-		p2_rb[3].	setBounds(20, 70, 40, 15);
+		p2_rb[0].	setBounds(10, 40, 53, 15);
+		p2_rb[1].	setBounds(60, 40, 53, 15);
+		p2_rb[2].	setBounds(110, 40, 53, 15);
+		p2_rb[3].	setBounds(10, 70, 53, 15);
 		p2_tf.		setBounds(70, 66, 70, 20);
 		//Panel 3
 		p3_l.setBounds(0, 10, 170, 25);
-		p3_list.setBounds(35, 35, 100, 50);
+		p3_sp.setBounds(35, 35, 100, 50);
 		//Panel 4
 		p4_l.setBounds(0, 10, 170, 25);
 		p4_choi.setBounds(35, 40, 100, 30);
 		//Panel 5
-		p5_l.setBounds(0, 15, 330, 25);
-		p5_ta.setBounds(20, 50, 285, 400);
-		p5_b[0].setBounds(30, 470, 55, 25);
-		p5_b[1].setBounds(100, 470, 55, 25);
-		p5_b[2].setBounds(245, 470, 55, 25);
+		p5_l.setBounds(0, 15, 360, 25);
+		p5_sp.setBounds(20, 50, 315, 400);
+		p5_b[0].setBounds(20, 470, 75, 25);
+		p5_b[1].setBounds(110, 470, 75, 25);
+		p5_b[2].setBounds(280, 470, 55, 25);
 		//Panel 6
-		
-		
 	}
 	void addComponents() {
 		/*
@@ -670,13 +676,13 @@ public class frame extends Frame implements ActionListener {
 		p[2].add(p2_tf);
 		//Panel 3
 		p[3].add(p3_l);
-		p[3].add(p3_list);
+		p[3].add(p3_sp);
 		//Panel 4
 		p[4].add(p4_l);
 		p[4].add(p4_choi);
 		//Panel 5
 		p[5].add(p5_l);
-		p[5].add(p5_ta);
+		p[5].add(p5_sp);
 		for(i=0; i<p5_b.length; i++)
 			p[5].add(p5_b[i]);
 		//Panel 6
@@ -686,10 +692,10 @@ public class frame extends Frame implements ActionListener {
 		 * Add Panel to Frame
 		 */
 		//PopupMenu
-		this.add(pm);
+		this.getContentPane().add(pm);
 		//panel
 		for(i=0; i<p.length; i++)
-			this.add(p[i]);
+			this.getContentPane().add(p[i]);
 		/*
 		 * Add Action Listener
 		 */
@@ -726,7 +732,7 @@ public class frame extends Frame implements ActionListener {
 			p[i].addMouseListener(new MouseAdapter() {
 				public void mousePressed(MouseEvent me) {
 					if(me.getModifiers() == me.BUTTON3_MASK)
-						pm.show(f, me.getXOnScreen()-40, me.getYOnScreen()-40);
+						pm.show(f, me.getXOnScreen()-f.getX(), me.getYOnScreen()-f.getY());
 				}
 			});
 		}
@@ -807,20 +813,4 @@ public class frame extends Frame implements ActionListener {
 		}
 		disconnectDB();
 	}
-}
-/*
- * for Exit
- */
-class EventHandler implements WindowListener {
-	public void windowClosing(WindowEvent e) {
-		e.getWindow().setVisible(false);
-		e.getWindow().dispose();
-		System.exit(0);
-	}
-	public void windowOpened(WindowEvent e) {}
-	public void windowClosed(WindowEvent e) {}
-	public void windowIconified(WindowEvent e) {}
-	public void windowDeiconified(WindowEvent e) {}
-	public void windowActivated(WindowEvent e) {}
-	public void windowDeactivated(WindowEvent e) {}
 }
