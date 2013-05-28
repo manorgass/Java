@@ -130,7 +130,7 @@ public class frame extends JFrame implements ActionListener {
 		//p6 buttons	
 		case "Array Save":
 			//check empty field
-			if(checkEmpty()) break;
+			if(checkEmpty() || getKor() == -1 || getMat() == -1 || getEng() == -1) break;
 			student[stuIndex] = new Students(get_Name(), get_Num(), getKor(),
 					getMat(), getEng(), getFavoriteFood(), getFavoriteMusic(),
 					getFavoriteMovie(), getFavoritProfessor());
@@ -432,7 +432,7 @@ public class frame extends JFrame implements ActionListener {
 		int count = 0;
 		for(i=0; i<p1_cb.length; i++) {
 			if(p1_cb[i].isSelected() && i<p1_cb.length-1) {
-				if(count>1)
+				if(count>=1)
 					sumString += ", ";
 				sumString += p1_cb[i].getLabel();
 				count++;
